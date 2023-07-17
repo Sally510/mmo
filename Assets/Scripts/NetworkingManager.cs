@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 public class NetworkingManager : MonoBehaviour
 {
+    private const string BASE_URL = "http://89.142.170.95";
 
     public TMP_InputField EmailInputField;
     public TMP_InputField PasswordInputField;
@@ -21,13 +22,13 @@ public class NetworkingManager : MonoBehaviour
     IEnumerator Login(string email, string password)
     {
         
-        string json = JsonUtility.ToJson(new LoginModel
+        string json = JsonUtility.ToJson(new LoginRequest
         {
             email = email,
             password = password
         });
 
-        UnityWebRequest www = UnityWebRequest.Post("http://89.142.170.95/api/auth/login", json, "application/json");
+        UnityWebRequest www = UnityWebRequest.Post(BASE_URL + "/api/auth/login", json, "application/json");
         yield return www.SendWebRequest();
 
         if (www.result != UnityWebRequest.Result.Success)
@@ -36,18 +37,11 @@ public class NetworkingManager : MonoBehaviour
         }
         else
         {
-            Debug.Log(www.downloadHandler.text);
+            LoginResponse response = JsonUtility.FromJson<LoginResponse>(www.downloadHandler.text);
+            Debug.Log(JsonUtility.ToJson(response));
             SceneManager.LoadScene("GameScene");
         }
     }
-
-    [Serializable]
-    class LoginModel
-    {
-        public string email;
-        public string password;
-    }
-
 
     // Start is called before the first frame update
     void Start()
@@ -59,5 +53,29 @@ public class NetworkingManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    [Serializable]
+    class LoginRequest
+    {
+        public string email;
+        public string password;
+    }
+
+    [Serializable]
+    class LoginResponse
+    {
+        public bool ok;
+        public PayloadModel payload;
+        public List<string> errors;
+
+        [Serializable]
+        public class PayloadModel
+        {
+            public string accessToken;
+            public int accessExpiry;
+            public string refreshToken;
+            public int refreshExpiry;
+        }
     }
 }
