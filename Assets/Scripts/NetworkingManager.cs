@@ -5,7 +5,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class NetworkingManager : MonoBehaviour
 {
@@ -38,21 +37,12 @@ public class NetworkingManager : MonoBehaviour
         else
         {
             LoginResponse response = JsonUtility.FromJson<LoginResponse>(www.downloadHandler.text);
-            Debug.Log(JsonUtility.ToJson(response));
-            SceneManager.LoadScene("GameScene");
+            if(response.ok) {
+                var builder = new PacketBuilder(PacketType.Login).SetBreakString(email).SetBreakString(password);
+                Client.Instance.Send(builder);
+                SceneManager.LoadScene("GameScene");
+            }
         }
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     [Serializable]
