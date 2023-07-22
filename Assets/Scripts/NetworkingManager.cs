@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class NetworkingManager : MonoBehaviour
 {
-    private const string BASE_URL = "http://89.142.170.95";
+    public string baseUrl = "http://192.168.1.25";
 
     public TMP_InputField EmailInputField;
     public TMP_InputField PasswordInputField;
@@ -27,7 +27,7 @@ public class NetworkingManager : MonoBehaviour
             password = password
         });
 
-        UnityWebRequest www = UnityWebRequest.Post(BASE_URL + "/api/auth/login", json, "application/json");
+        UnityWebRequest www = UnityWebRequest.Post(baseUrl + "/api/auth/login", json, "application/json");
         yield return www.SendWebRequest();
 
         if (www.result != UnityWebRequest.Result.Success)
@@ -38,9 +38,15 @@ public class NetworkingManager : MonoBehaviour
         {
             LoginResponse response = JsonUtility.FromJson<LoginResponse>(www.downloadHandler.text);
             if(response.ok) {
-                var builder = new PacketBuilder(PacketType.Login).SetBreakString(email).SetBreakString(password);
-                Client.Instance.Send(builder);
-                SceneManager.LoadScene("GameScene");
+                var builder = new PacketBuilder(PacketType.Login).SetBreakString(response.payload.accessToken);
+                yield return Client.Instance.BiSend(builder, packet =>
+                {
+                    if (packet.GetBoolean())
+                    {
+                        SceneManager.LoadScene("GameScene");
+                    }
+                });
+                
             }
         }
     }
