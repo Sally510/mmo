@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
+namespace Assets.Scripts.Client
+{
 public class PacketBuilder
 {
     private static int _packet_id_counter = 0;
@@ -20,6 +22,11 @@ public class PacketBuilder
             PacketId = Interlocked.Increment(ref _packet_id_counter);
             SetInt(PacketId.Value);
         }
+    }
+
+    public static PacketBuilder Create(PacketType packetType)
+    {
+        return new PacketBuilder(packetType);
     }
 
     private void SetLength()
@@ -80,4 +87,4 @@ public class PacketBuilder
         }
     }
 }
-
+}

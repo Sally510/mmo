@@ -2,6 +2,8 @@
 using System.Text;
 using Unity.VisualScripting;
 
+namespace Assets.Scripts.Client
+{
 public enum PacketType : byte
 {
     Walk = 1,
@@ -148,4 +150,5 @@ internal static class PacketTypeExtensions
 
         throw new Exception("Not a valid value for PacketType");
     }
+}
 }
