@@ -12,7 +12,7 @@ namespace Assets.Scripts
 {
     public class NetworkingManager : MonoBehaviour
     {
-        public string baseUrl = "http://192.168.1.25";
+        public string baseUrl = ConfigurationManager.Config.AuthHost;
 
         public TMP_InputField EmailInputField;
         public TMP_InputField PasswordInputField;
@@ -20,8 +20,12 @@ namespace Assets.Scripts
 
         private void Start()
         {
-            EmailInputField.text = "test@test.si";
-            PasswordInputField.text = "fduler123";
+            if(ConfigurationManager.Config.DefaultLogin != null)
+            {
+                EmailInputField.text = ConfigurationManager.Config.DefaultLogin.Username;
+                PasswordInputField.text = ConfigurationManager.Config.DefaultLogin.Password;
+            }
+            
             ErrorLabel.text = string.Empty;
         }
 
@@ -59,7 +63,7 @@ namespace Assets.Scripts
                         {
                             case StatusType.Success:
                                 State.CharacterOptions = loginModel.CharacterList;
-                                SceneManager.LoadScene("GameScene");
+                                SceneManager.LoadScene("CharacterSelectScene");
                                 break;
                             case StatusType.AlreadyLoggedIn:
                                 ErrorLabel.text = "User already logged in.";

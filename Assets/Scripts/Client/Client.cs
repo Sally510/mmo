@@ -11,8 +11,8 @@ namespace Assets.Scripts.Client
     {
         public static Client Instance;
 
-        public string host = "localhost";
-        public int port = 13551;
+        public string host = ConfigurationManager.Config.Host;
+        public int port = ConfigurationManager.Config.Port;
         private TCP _tcp;
 
         void Awake()
