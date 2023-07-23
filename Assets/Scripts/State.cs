@@ -6,5 +6,6 @@ namespace Assets.Scripts
 public static class State
 {
     public static List<CharacterOptionModel> CharacterOptions { get; set; } = new();
+    public static CharacterModel LoggedCharacter { get; set; } = new();
 }
 }

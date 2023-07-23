@@ -43,7 +43,7 @@ namespace Assets.Scripts.Client
 
                     if (model.Success)
                     {
-                        model.SelecetedCharacter = new CharacterModel
+                        model.SelectedCharacter = new CharacterModel
                         {
                             MapId = packet.GetInt(),
                             Experience = packet.GetUInt(),
