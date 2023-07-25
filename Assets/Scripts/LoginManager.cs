@@ -12,8 +12,6 @@ namespace Assets.Scripts
 {
     public class LoginManager : MonoBehaviour
     {
-        public string baseUrl = ConfigurationManager.Config.AuthHost;
-
         public TMP_InputField EmailInputField;
         public TMP_InputField PasswordInputField;
         public TMP_Text ErrorLabel;
@@ -48,7 +46,7 @@ namespace Assets.Scripts
                 password = password
             });
 
-            UnityWebRequest www = UnityWebRequest.Post(baseUrl + "/api/auth/login", json, "application/json");
+            UnityWebRequest www = UnityWebRequest.Post(ConfigurationManager.Config.AuthHost + "/api/auth/login", json, "application/json");
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
