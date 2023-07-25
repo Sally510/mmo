@@ -20,6 +20,9 @@ namespace Assets.Scripts
 
         private void Start()
         {
+            ConfigurationManager.Clear();
+            State.Clear();
+
             if(ConfigurationManager.Config.DefaultLogin != null)
             {
                 EmailInputField.text = ConfigurationManager.Config.DefaultLogin.Username;

@@ -11,8 +11,6 @@ namespace Assets.Scripts.Client
     {
         public static Client Instance;
 
-        public string host = ConfigurationManager.Config.Host;
-        public int port = ConfigurationManager.Config.Port;
         private TCP _tcp;
 
         void Awake()
@@ -38,7 +36,7 @@ namespace Assets.Scripts.Client
             Debug.Log("Creating new TCP instance.");
             if (_tcp == null)
             {
-                _tcp = new(host, port);
+                _tcp = new(ConfigurationManager.Config.Host, ConfigurationManager.Config.Port);
                 StartCoroutine(_tcp.Connect());
             }
         }

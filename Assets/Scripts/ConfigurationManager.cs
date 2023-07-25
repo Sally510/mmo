@@ -25,6 +25,11 @@ namespace Assets.Scripts
             }
         }
 
+        public static void Clear()
+        {
+            _config = null;
+        }
+
         [Serializable]
         public class ConfigurationModel
         {
