@@ -1347,7 +1347,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1158247602}
-  - component: {fileID: 1158247601}
   m_Layer: 0
   m_Name: CharacterSelectManager
   m_TagString: Untagged
@@ -1355,20 +1354,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1158247601
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1158247600}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b16bf46e3943ff48871a757e6f466cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  buttonPrefab: {fileID: 6989809695721445328, guid: d86cb4f61b7040242b55319da8d63d62, type: 3}
-  buttonParent: {fileID: 652555254}
 --- !u!4 &1158247602
 Transform:
   m_ObjectHideFlags: 0
