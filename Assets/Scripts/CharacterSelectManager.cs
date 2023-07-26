@@ -9,6 +9,17 @@ namespace Assets.Scripts
 {
     public class CharacterSelectManager : MonoBehaviour
     {
+        public GameObject buttonPrefab;
+        public GameObject buttonParent;
+
+
+        private void Start()
+        {
+            foreach (var characterOption in State.CharacterOptions){
+                GameObject newButton = Instantiate(buttonPrefab, buttonParent.transform);
+                newButton.GetComponent<CharacterButton>().characterText.text = characterOption.Name;
+            }
+        }
         public void OnPlayClick()
         {
             StartCoroutine(Play(State.CharacterOptions[0].Id));
