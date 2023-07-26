@@ -9,7 +9,7 @@ namespace Assets.Scripts.Player
     public class PlayerMovement : MonoBehaviour
     {
         private Rigidbody2D rb;
-        private float moveH, moveV;
+        public FixedJoystick variableJoystick;
         [SerializeField] private float moveSpeed = 1.0f;
 
         private void Awake()
@@ -20,14 +20,11 @@ namespace Assets.Scripts.Player
         private void FixedUpdate()
         {
             Vector2 currentPosition = rb.position;
+            Vector3 direction = Vector2.up * variableJoystick.Vertical + Vector2.right * variableJoystick.Horizontal;
 
-            moveH = Input.GetAxis("Horizontal");
-            moveV = Input.GetAxis("Vertical");
+            FindObjectOfType<PlayerAnimation>().SetDirection(direction);
 
-            Vector2 inputVector = new(moveH, moveV);
-            FindObjectOfType<PlayerAnimation>().SetDirection(inputVector);
-
-            Vector2 movement = inputVector * moveSpeed;
+            Vector2 movement = direction * moveSpeed;
             Vector2 newPosition = currentPosition + movement * Time.fixedDeltaTime;
             rb.MovePosition(newPosition);
 
