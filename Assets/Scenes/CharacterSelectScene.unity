@@ -1367,8 +1367,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b16bf46e3943ff48871a757e6f466cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buttonPrefab: {fileID: 0}
-  buttonParent: {fileID: 0}
+  buttonPrefab: {fileID: 6989809695721445328, guid: d86cb4f61b7040242b55319da8d63d62, type: 3}
+  buttonParent: {fileID: 652555254}
 --- !u!4 &1158247602
 Transform:
   m_ObjectHideFlags: 0

@@ -13,13 +13,19 @@ namespace Assets.Scripts
         public GameObject buttonParent;
 
 
-        private void Start()
+        private void Awake()
         {
-            foreach (var characterOption in State.CharacterOptions){
+            foreach (var characterOption in State.CharacterOptions)
+            {
                 GameObject newButton = Instantiate(buttonPrefab, buttonParent.transform);
                 newButton.GetComponent<CharacterButton>().characterText.text = characterOption.Name;
             }
         }
+        private void Reset()
+        {
+            //TODO: clear
+        }
+
         public void OnPlayClick()
         {
             StartCoroutine(Play(State.CharacterOptions[0].Id));
