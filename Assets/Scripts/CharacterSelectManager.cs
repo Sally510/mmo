@@ -13,26 +13,31 @@ namespace Assets.Scripts
     {
         public GameObject buttonPrefab;
         public GameObject buttonParent;
-        private int _selectedCharacterId;
+        private long? _selectedCharacterId;
 
         private void Awake()
         {
+            _selectedCharacterId = null;
             foreach (var characterOption in State.CharacterOptions)
             {
                 GameObject newButton = Instantiate(buttonPrefab, buttonParent.transform);
                 newButton.GetComponent<CharacterButton>().characterText.text = characterOption.Name;
-                newButton.GetComponent<Button>().onClick.AddListener(() => SelectCharacter((int)characterOption.Id));
+                newButton.GetComponent<Button>().onClick.AddListener(() => SelectCharacter(characterOption.Id));
             }
         }
 
-        private void SelectCharacter(int characterId)
+        private void SelectCharacter(long characterId)
         {
             _selectedCharacterId = characterId;
         }
 
         public void OnPlayClick()
         {
-            StartCoroutine(Play(_selectedCharacterId));
+            if (!_selectedCharacterId.HasValue)
+            {
+                return;
+            }
+            StartCoroutine(Play((long)_selectedCharacterId));
         }
 
         IEnumerator Play(long characterId)
