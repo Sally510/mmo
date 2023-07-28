@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -28,16 +29,21 @@ namespace Assets.Scripts
 
         private void SelectCharacter(long characterId)
         {
-            _selectedCharacterId = characterId;
+            if (characterId <= 0)
+            {
+                _selectedCharacterId = null;
+            } else
+            {
+                _selectedCharacterId = _selectedCharacterId != characterId ? characterId : null;
+            }
         }
 
         public void OnPlayClick()
         {
-            if (!_selectedCharacterId.HasValue)
+            if (_selectedCharacterId.HasValue)
             {
-                return;
+                StartCoroutine(Play(_selectedCharacterId.Value));
             }
-            StartCoroutine(Play((long)_selectedCharacterId));
         }
 
         IEnumerator Play(long characterId)
@@ -51,19 +57,31 @@ namespace Assets.Scripts
                 }
             });
         }
-
+        
         public void OnDeleteClick()
         {
-            if (!_selectedCharacterId.HasValue)
+            if (_selectedCharacterId.HasValue)
             {
-                return;
+                StartCoroutine(Delete(_selectedCharacterId.Value));
             }
-            //StartCoroutine(Delete((long)_selectedCharacterId));
         }
 
-        //IEnumerator Delete(long characterId) {}
+        IEnumerator Delete(long characterId) 
+        {
+            yield return ClientManager.DeleteCharacter(characterId, model =>
+            {
+                if(model.Success)
+                {
+                    State.CharacterOptions = model.CharacterList;
+                    //TODO: refresh the character buttons displayed
+                } else
+                {
+                    //TODO: write an error that the deletion wasn't successful
+                }
+            });
+        }
 
-        public void CreateButton_Click()
+        public void OnCreateCharacterClick()
         {
             SceneManager.LoadScene("CreateCharacterScene");
         }
