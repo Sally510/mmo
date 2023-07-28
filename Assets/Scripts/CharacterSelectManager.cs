@@ -51,5 +51,24 @@ namespace Assets.Scripts
                 }
             });
         }
+
+        public void OnDeleteClick()
+        {
+            if (!_selectedCharacterId.HasValue)
+            {
+                return;
+            }
+            //StartCoroutine(Delete((long)_selectedCharacterId));
+        }
+
+        //IEnumerator Delete(long characterId) {}
+
+        public void CreateButton_Click()
+        {
+            SceneManager.LoadScene("CreateCharacterScene");
+        }
+
+
+
     }
 }
