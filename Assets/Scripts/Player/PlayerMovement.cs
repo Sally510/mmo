@@ -9,26 +9,29 @@ namespace Assets.Scripts.Player
     public class PlayerMovement : MonoBehaviour
     {
         private Rigidbody2D rb;
+        private PlayerAnimation anim;
         public FixedJoystick variableJoystick;
-        [SerializeField] private float moveSpeed = 1.0f;
+        [SerializeField] private float moveSpeed = 3.0f;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            anim = FindObjectOfType<PlayerAnimation>();
         }
 
         private void FixedUpdate()
         {
             Vector2 currentPosition = rb.position;
-            Vector3 direction = Vector2.up * variableJoystick.Vertical + Vector2.right * variableJoystick.Horizontal;
+            Vector3 inputVector = Vector2.up * variableJoystick.Vertical + Vector2.right * variableJoystick.Horizontal;
+            inputVector = Vector2.ClampMagnitude(inputVector, 1);
 
-            FindObjectOfType<PlayerAnimation>().SetDirection(direction);
 
-            Vector2 movement = direction * moveSpeed;
-            Vector2 newPosition = currentPosition + movement * Time.fixedDeltaTime;
+            Vector2 movement = moveSpeed * Time.fixedDeltaTime * inputVector;
+            Vector2 newPosition = currentPosition + movement;
+            //Debug.Log(Time.fixedDeltaTime);
+
+            anim.SetDirection(inputVector);
             rb.MovePosition(newPosition);
-
-            //Debug.Log($"{newPosition * 100} = {ScreenToIso(newPosition * 100, new(64, 32))}");
         }
 
         internal static Vector2 ScreenToIso(Vector2 position, Vector2 size)

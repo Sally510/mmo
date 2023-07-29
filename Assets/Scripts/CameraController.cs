@@ -4,36 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Assets.Scripts
 {
     public class CameraController: MonoBehaviour
     {
-        private Transform target;
-        [SerializeField] private float smoothSpeed;
-        //[SerializeField] private float minX, maxX, minY, maxY;
+        Transform followTarget;
+        private Vector3 targetPos;
+        public float moveSpeed;
 
-        private void Awake()
+        void Start()
         {
-            target = GameObject
+            followTarget = GameObject
                 .FindGameObjectWithTag("Player")
                 .GetComponent<Transform>();
         }
 
-        private void LateUpdate()
+        void Update()
         {
-            //Debug.Log(transform.position);
-            //transform.position = new Vector3(target.position.x, target.position.y, transform.position.z);
-
-            transform.position = Vector3.Lerp(
-                transform.position,
-                new Vector3(target.position.x, target.position.y, transform.position.z),
-                smoothSpeed * Time.deltaTime);
-
-            //transform.position = new Vector3(
-            //    Mathf.Clamp(transform.position.x, minX, maxX),
-            //    Mathf.Clamp(transform.position.y, minY, maxY),
-            //    transform.position.z);
+            if (followTarget != null)
+            {
+                targetPos = new Vector3(followTarget.position.x, followTarget.position.y, transform.position.z);
+                Vector3 velocity = (targetPos - transform.position) * moveSpeed;
+                transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, 1.0f, Time.deltaTime);
+            }
         }
     }
 }
