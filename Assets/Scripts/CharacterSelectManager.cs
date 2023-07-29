@@ -3,6 +3,7 @@ using Assets.Scripts.Client.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.Text;
@@ -14,7 +15,9 @@ namespace Assets.Scripts
     {
         public GameObject buttonPrefab;
         public GameObject buttonParent;
+        public TMP_Text ErrorLabel;
         private long? _selectedCharacterId;
+        [SerializeField] private ConfirmationWindow _confirmationWindow;
 
         private void Awake()
         {
@@ -56,27 +59,48 @@ namespace Assets.Scripts
                     SceneManager.LoadScene("GameScene");
                 }
             });
-        }
-        
-        public void OnDeleteClick()
+        }       
+
+        private void OpenConfirmationWindow(string message)
         {
+            _confirmationWindow.gameObject.SetActive(true);
+            _confirmationWindow.yesButton.onClick.AddListener(OnYesClick);
+            _confirmationWindow.cancelButton.onClick.AddListener(OnCancelClick);
+            _confirmationWindow.messageText.text = message;
+        }
+
+        private void OnYesClick()
+        {
+            _confirmationWindow.gameObject.SetActive(false);
             if (_selectedCharacterId.HasValue)
             {
+                Debug.Log(_selectedCharacterId.Value);
                 StartCoroutine(Delete(_selectedCharacterId.Value));
             }
+        }
+
+        private void OnCancelClick()
+        {
+            _confirmationWindow.gameObject.SetActive(false);
+        }
+
+        public void OnDeleteClick()
+        {
+            OpenConfirmationWindow("Are you sure you wanna delete the character?");
         }
 
         IEnumerator Delete(long characterId) 
         {
             yield return ClientManager.DeleteCharacter(characterId, model =>
             {
-                if(model.Success)
+                if (model.Success)
                 {
                     State.CharacterOptions = model.CharacterList;
-                    //TODO: refresh the character buttons displayed
-                } else
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
+                else
                 {
-                    //TODO: write an error that the deletion wasn't successful
+                    ErrorLabel.text = "Deletion failed.";
                 }
             });
         }
