@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Assets.Scripts.Client
 {
@@ -49,8 +50,7 @@ namespace Assets.Scripts.Client
                             MapId = packet.GetInt(),
                             Experience = packet.GetUInt(),
                             EntityId = packet.GetUInt(),
-                            X = packet.GetFloat(),
-                            Y = packet.GetFloat(),
+                            IsoPosition = packet.GetVector2(),
                             Angle = packet.GetFloat(),
                             Health = packet.GetInt(),
                             MaxHealth = packet.GetInt(),
@@ -63,8 +63,7 @@ namespace Assets.Scripts.Client
                                 EntityId = packet.GetUInt(),
                                 Experience = packet.GetUInt(),
                                 MapId = packet.GetInt(),
-                                X = packet.GetFloat(),
-                                Y = packet.GetFloat(),
+                                IsoPosition = packet.GetVector2(),
                                 Angle = packet.GetFloat(),
                                 Health = packet.GetInt(),
                                 MaxHealth = packet.GetInt(),

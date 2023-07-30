@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace Assets.Scripts.Client
 {
@@ -87,6 +88,7 @@ public sealed class Packet : IDisposable
     public int GetInt(bool peek = false) => BitConverter.ToInt32(TakeDataSlice(4, peek));
     public uint GetUInt(bool peek = false) => (uint)GetInt(peek);
     public float GetFloat(bool peek = false) => BitConverter.ToSingle(TakeDataSlice(4, peek));
+    public Vector2 GetVector2(bool peek = false) => new Vector2(GetFloat(peek), GetFloat(peek));
     public long GetLong(bool peek = false) => BitConverter.ToInt64(TakeDataSlice(8, peek));
     public byte[] GetByteArray(int length, bool peek = false) => TakeDataSlice(length, peek);
     public string GetFixedString(int length, bool peek = false) => Encoding.UTF8.GetString(TakeDataSlice(length, peek));
