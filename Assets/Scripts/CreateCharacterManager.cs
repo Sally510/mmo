@@ -16,29 +16,18 @@ public class CreateCharacterManager : MonoBehaviour
         SceneManager.LoadScene("CharacterSelectScene");
     }
 
-    public void OnCreateClick()
+    public async void OnCreateClick()
     {
         ErrorLabel.text = string.Empty;
 
         string name = NameInputField.text;
         if (!string.IsNullOrEmpty(name))
         {
-            StartCoroutine(Create(name));
-        }
-        else
-        {
-            ErrorLabel.text = "Enter the character name";
-        }
-    }
-
-    IEnumerator Create(string name)
-    {
-        yield return ClientManager.CreateCharacter(name, model =>
-        {
-            switch (model.Status)
+            var response = await ClientManager.CreateCharacterAsync(name, destroyCancellationToken);
+            switch (response.Status)
             {
                 case CreateCharacterModel.StatusType.Success:
-                    State.CharacterOptions = model.CharacterList;
+                    State.CharacterOptions = response.CharacterList;
                     SceneManager.LoadScene("CharacterSelectScene");
                     break;
                 case CreateCharacterModel.StatusType.NameExists:
@@ -52,6 +41,10 @@ public class CreateCharacterManager : MonoBehaviour
                     ErrorLabel.text = "Unknown error";
                     break;
             }
-        });
+        }
+        else
+        {
+            ErrorLabel.text = "Enter the character name";
+        }
     }
 }

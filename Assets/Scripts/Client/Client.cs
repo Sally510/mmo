@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -31,13 +32,13 @@ namespace Assets.Scripts.Client
             }
         }
 
-        void Start()
+        async void Start()
         {
             Debug.Log("Creating new TCP instance.");
             if (_tcp == null)
             {
                 _tcp = new(ConfigurationManager.Config.Host, ConfigurationManager.Config.Port);
-                StartCoroutine(_tcp.Connect());
+                await _tcp.ConnectAsync(destroyCancellationToken);
             }
         }
 
@@ -46,36 +47,27 @@ namespace Assets.Scripts.Client
             Instance = null;
         }
 
-        public IEnumerator UniSend(PacketBuilder packetBuilder)
+        public Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
         {
-            if (packetBuilder is null)
-                throw new ArgumentNullException(nameof(packetBuilder));
-
-            byte[] data = packetBuilder.Data.ToArray();
-            yield return _tcp.UniSend(data, 0, data.Length);
+            return _tcp.UniSendAsync(packetBuilder, token);
         }
 
-        public IEnumerator BiSend(PacketBuilder packetBuilder, Action<Packet> callback)
+        public Task<Packet> BiSendAsync(PacketBuilder packetBuilder, CancellationToken token)
         {
-            if (packetBuilder is null)
-                throw new ArgumentNullException(nameof(packetBuilder));
-            if (!packetBuilder.PacketId.HasValue)
-                throw new ArgumentException("Packets without a packet ID cannot dont have reponses.", nameof(packetBuilder));
-
-            byte[] data = packetBuilder.Data.ToArray();
-            yield return _tcp.BiSend(data, 0, data.Length, packetBuilder.PacketId.Value, callback);
+            return _tcp.BiSendAsync(packetBuilder, token);
         }
 
 
         public sealed class TCP : IDisposable
         {
             public const int MAX_PACKET_SIZE = 1024 * 10;
-            private readonly byte[] _frameBuffer = new byte[] { 0, 0, 0, 0 };
+            private readonly Memory<byte> _frameBuffer = new byte[] { 0, 0, 0, 0 };
 
             private readonly string _host;
             private readonly int _port;
             private readonly TcpClient _socket;
             private readonly LinkedList<Packet> _packets;
+            private readonly LinkedList<Packet> _bi_packets;
 
             private NetworkStream _stream;
 
@@ -85,128 +77,108 @@ namespace Assets.Scripts.Client
                 _port = port;
                 _socket = new TcpClient();
                 _packets = new();
+                _bi_packets = new();
             }
 
-            public IEnumerator Connect()
+            public async Task ConnectAsync(CancellationToken token)
             {
-                IAsyncResult result = _socket.BeginConnect(_host, _port, null, null);
-
-                //TODO: add timeout
-                while (!result.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                _socket.EndConnect(result);
+                await _socket.ConnectAsync(_host, _port);
                 _stream = _socket.GetStream();
 
-                //here we constantly read incoming packets
-                while (true)
+                while (!token.IsCancellationRequested)
                 {
-                    yield return Read();
-                }
-            }
-
-            public IEnumerator UniSend(byte[] data, int offset, int size)
-            {
-                IAsyncResult result = _stream.BeginWrite(data, offset, size, null, null);
-
-                //TODO: add timeout
-                while (!result.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                _stream.EndWrite(result);
-            }
-
-            public IEnumerator BiSend(byte[] data, int offset, int size, int packetId, Action<Packet> callback)
-            {
-                IAsyncResult result = _stream.BeginWrite(data, offset, size, null, null);
-
-                //TODO: add timeout
-                while (!result.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                _stream.EndWrite(result);
-
-                //TODO: timeout
-                do
-                {
-                    lock (_packets)
+                    Packet packet = await ReadPacketAsync(token);
+                    Debug.Log($"new packet of type: {packet.PacketType}");
+                    if (packet.PacketId.HasValue)
                     {
-                        LinkedListNode<Packet> node = _packets.First;
-                        while (node is not null)
-                        {
-                            if (node.Value.PacketId == packetId)
-                            {
-                                _packets.Remove(node);
-                                callback.Invoke(node.Value);
-                                yield break;
-                            }
+                        _bi_packets.AddLast(packet);
+                    }
+                    else
+                    {
+                        _packets.AddLast(packet);
+                    }
+                }
+            }
 
-                            node = node.Next;
+            public async Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
+            {
+                byte[] data = packetBuilder.Data.ToArray();
+                if (data.Length > MAX_PACKET_SIZE)
+                {
+                    throw new Exception($"Trying to send a packet thats too big. ({packetBuilder.Data.Count}) - {data[4]}");
+                }
+
+                await _stream.WriteAsync(data, token);
+            }
+
+            public async Task<Packet> BiSendAsync(PacketBuilder packetBuilder, CancellationToken token)
+            {
+                int packetId = packetBuilder.PacketId.Value;
+
+                await UniSendAsync(packetBuilder, token);
+
+                while (!token.IsCancellationRequested)
+                {
+                    LinkedListNode<Packet> node = _bi_packets.First;
+                    while (node is not null)
+                    {
+                        LinkedListNode<Packet> next = node.Next;
+
+                        if (node.Value.PacketId == packetId)
+                        {
+                            _bi_packets.Remove(node.Value);
+                            return node.Value;
                         }
+
+                        node = next;
                     }
 
-                    yield return null;
-                } while (true);
+                    await Task.Yield();
+                }
+
+                throw new TimeoutException("Waiting for packet timed out.");
             }
 
-            private IEnumerator Read()
+            private async Task<int> ReadBufferAsync(Memory<byte> buffer, CancellationToken token)
             {
-                byte[] packetData = null;
-                bool freePacketData = false;
+                int n = await _stream.ReadAsync(buffer);
+                if (n == 0)
+                {
+                    //TODO: close connection
+                    throw new Exception("Server closed the connection");
+                }
+                return n;
+            }
+
+            private async Task<Packet> ReadPacketAsync(CancellationToken token)
+            {
+                bool returnArray = false;
+                byte[] data = null;
 
                 try
                 {
-                    IAsyncResult result = _stream.BeginRead(_frameBuffer, 0, _frameBuffer.Length, null, null);
-                    while (!result.IsCompleted)
-                    {
-                        yield return null;
-                    }
-                    int n = _stream.EndRead(result);
-                    if (n == 0)
-                    {
-                        //TODO: disconnect
-                        yield break;
-                    }
+                    int n = await ReadBufferAsync(_frameBuffer, token);
+                    if (n != sizeof(int))
+                        throw new Exception($"Frame header of size {n} is invalid");
 
-                    int length = BitConverter.ToInt32(_frameBuffer);
+                    int length = BitConverter.ToInt32(_frameBuffer.Span);
                     if (length > MAX_PACKET_SIZE)
                         throw new Exception($"Packet size cannot be larger than {MAX_PACKET_SIZE}");
-                    int packetLength = length;
-                    packetData = ArrayPool<byte>.New(length);
-                    freePacketData = true;
 
-                    //read the next packet header
-                    result = _stream.BeginRead(packetData, 0, packetLength, null, null);
-                    while (!result.IsCompleted)
-                    {
-                        yield return null;
-                    }
-                    n = _stream.EndRead(result);
-                    if (n == 0)
-                    {
-                        //TODO: disconnect
-                        yield break;
-                    }
+                    //borrow byte array
+                    data = ArrayPool<byte>.New(length);
+                    n = await ReadBufferAsync(data.AsMemory()[..length], token);
+                    if (n != length)
+                        throw new Exception($"Frame header of size {n} is invalid");
 
-                    //enqueue the packet
-                    lock (_packets)
-                    {
-                        _packets.AddFirst(new Packet(packetData, packetLength));
-                        freePacketData = false;
-                    }
-
+                    return new Packet(data, length);
                 }
                 finally
                 {
-                    if (freePacketData && packetData != null)
+                    //return the data
+                    if (returnArray && data is not null)
                     {
-                        ArrayPool<byte>.Free(packetData);
+                        ArrayPool<byte>.Free(data);
                     }
                 }
             }

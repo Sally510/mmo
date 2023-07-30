@@ -41,25 +41,18 @@ namespace Assets.Scripts
             }
         }
 
-        public void OnPlayClick()
+        public async void OnPlayClick()
         {
             if (_selectedCharacterId.HasValue)
             {
-                StartCoroutine(Play(_selectedCharacterId.Value));
-            }
-        }
-
-        IEnumerator Play(long characterId)
-        {
-            yield return ClientManager.LoginCharacter(characterId, packet =>
-            {
-                if (packet.Success)
+                var response = await ClientManager.LoginCharacterAsync(_selectedCharacterId.Value, destroyCancellationToken);
+                if (response.Success)
                 {
-                    State.LoggedCharacter = packet.SelectedCharacter;
+                    State.LoggedCharacter = response.SelectedCharacter;
                     SceneManager.LoadScene("GameScene");
                 }
-            });
-        }       
+            }
+        }
 
         private void OpenConfirmationWindow(string message)
         {
@@ -69,13 +62,21 @@ namespace Assets.Scripts
             _confirmationWindow.messageText.text = message;
         }
 
-        private void OnYesClick()
+        private async void OnYesClick()
         {
             _confirmationWindow.gameObject.SetActive(false);
             if (_selectedCharacterId.HasValue)
             {
-                Debug.Log(_selectedCharacterId.Value);
-                StartCoroutine(Delete(_selectedCharacterId.Value));
+                var response = await  ClientManager.DeleteCharacterAsync(_selectedCharacterId.Value, destroyCancellationToken);
+                if (response.Success)
+                {
+                    State.CharacterOptions = response.CharacterList;
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
+                else
+                {
+                    ErrorLabel.text = "Deletion failed.";
+                }
             }
         }
 
@@ -87,22 +88,6 @@ namespace Assets.Scripts
         public void OnDeleteClick()
         {
             OpenConfirmationWindow("Are you sure you wanna delete the character?");
-        }
-
-        IEnumerator Delete(long characterId) 
-        {
-            yield return ClientManager.DeleteCharacter(characterId, model =>
-            {
-                if (model.Success)
-                {
-                    State.CharacterOptions = model.CharacterList;
-                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                }
-                else
-                {
-                    ErrorLabel.text = "Deletion failed.";
-                }
-            });
         }
 
         public void OnCreateCharacterClick()

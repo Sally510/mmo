@@ -1,140 +1,126 @@
 ﻿using Assets.Scripts.Client.Models;
-using System;
-using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Assets.Scripts.Client
 {
     public static class ClientManager
     {
-        public static IEnumerator Login(string access, Action<LoginModel> callback)
+        public static async Task<LoginModel> LoginAsync(string access, CancellationToken token)
         {
-            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.Login)
-                .SetBreakString(access),
-                packet =>
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.Login)
+                .SetBreakString(access), token);
+
+            LoginModel model = new()
+            {
+                Status = (LoginModel.StatusType)packet.GetByte()
+            };
+
+            if (model.Status == LoginModel.StatusType.Success)
+            {
+                while (packet.AnySpaceLeft)
                 {
-                    LoginModel model = new()
-                    {
-                        Status = (LoginModel.StatusType)packet.GetByte()
-                    };
-
-                    if (model.Status == LoginModel.StatusType.Success)
-                    {
-                        while (packet.AnySpaceLeft)
-                        {
-                            model.CharacterList.Add(CharacterOptionModel.Parse(packet));
-                        }
-                    }
-
-                    callback?.Invoke(model);
+                    model.CharacterList.Add(CharacterOptionModel.Parse(packet));
                 }
-            );
+            }
+
+            return model;
         }
 
-        public static IEnumerator LoginCharacter(long characterId, Action<LoginCharacterModel> callback)
+        public static async Task<LoginCharacterModel> LoginCharacterAsync(long characterId, CancellationToken token)
         {
-            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.CharacterLogin)
-                .SetLong(characterId),
-                packet =>
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.CharacterLogin)
+                .SetLong(characterId), token);
+
+            LoginCharacterModel model = new()
+            {
+                Success = packet.GetBoolean()
+            };
+
+            if (model.Success)
+            {
+                model.SelectedCharacter = new CharacterModel
                 {
-                    LoginCharacterModel model = new()
-                    {
-                        Success = packet.GetBoolean()
-                    };
+                    MapId = packet.GetInt(),
+                    Experience = packet.GetUInt(),
+                    EntityId = packet.GetUInt(),
+                    IsoPosition = packet.GetVector2(),
+                    Angle = packet.GetFloat(),
+                    Health = packet.GetInt(),
+                    MaxHealth = packet.GetInt(),
+                };
 
-                    if (model.Success)
-                    {
-                        model.SelectedCharacter = new CharacterModel
-                        {
-                            MapId = packet.GetInt(),
-                            Experience = packet.GetUInt(),
-                            EntityId = packet.GetUInt(),
-                            IsoPosition = packet.GetVector2(),
-                            Angle = packet.GetFloat(),
-                            Health = packet.GetInt(),
-                            MaxHealth = packet.GetInt(),
-                        };
-
-                        while (packet.AnySpaceLeft)
-                        {
-                            model.MapCharacter.Add(new CharacterModel
-                            {
-                                EntityId = packet.GetUInt(),
-                                Experience = packet.GetUInt(),
-                                MapId = packet.GetInt(),
-                                IsoPosition = packet.GetVector2(),
-                                Angle = packet.GetFloat(),
-                                Health = packet.GetInt(),
-                                MaxHealth = packet.GetInt(),
-                            });
-                        }
-                    }
-
-                    callback?.Invoke(model);
-                }
-            );
-        }
-
-        public static IEnumerator CreateCharacter(string name, Action<CreateCharacterModel> callback)
-        {
-            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.CharacterCreate)
-                .SetBreakString(name),
-                packet =>
+                while (packet.AnySpaceLeft)
                 {
-                    CreateCharacterModel model = new()
+                    model.MapCharacter.Add(new CharacterModel
                     {
-                        Status = (CreateCharacterModel.StatusType)packet.GetByte()
-                    };
-
-                    if (model.Status == CreateCharacterModel.StatusType.Success)
-                    {
-                        while (packet.AnySpaceLeft)
-                        {
-                            model.CharacterList.Add(CharacterOptionModel.Parse(packet));
-                        }
-                    }
-
-                    callback?.Invoke(model);
-                }
-            );
-        }
-
-        public static IEnumerator DeleteCharacter(long characterId, Action<DeleteCharacterModel> callback)
-        {
-            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.CharacterDelete)
-               .SetLong(characterId),
-               packet =>
-               {
-                   DeleteCharacterModel model = new()
-                   {
-                       Success = packet.GetBoolean()
-                   };
-
-                   if (model.Success)
-                   {
-                       while (packet.AnySpaceLeft)
-                       {
-                           model.CharacterList.Add(CharacterOptionModel.Parse(packet));
-                       }
-                   }
-
-                   callback?.Invoke(model);
-               }
-           );
-        }
-
-        public static IEnumerator SendMovePacket(float angle, float elapsedSeconds, Action<WalkModel> callback)
-        {
-            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.Walk)
-                .SetFloat(angle)
-                .SetFloat(elapsedSeconds),
-                packet =>
-                {
-                    callback?.Invoke(new WalkModel
-                    {
+                        EntityId = packet.GetUInt(),
+                        Experience = packet.GetUInt(),
+                        MapId = packet.GetInt(),
                         IsoPosition = packet.GetVector2(),
-                        Angle = packet.GetFloat()
+                        Angle = packet.GetFloat(),
+                        Health = packet.GetInt(),
+                        MaxHealth = packet.GetInt(),
                     });
-                });
+                }
+            }
+
+            return model;
+        }
+
+        public static async Task<CreateCharacterModel> CreateCharacterAsync(string name, CancellationToken token)
+        {
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.CharacterCreate)
+                .SetBreakString(name), token);
+
+            CreateCharacterModel model = new()
+            {
+                Status = (CreateCharacterModel.StatusType)packet.GetByte()
+            };
+
+            if (model.Status == CreateCharacterModel.StatusType.Success)
+            {
+                while (packet.AnySpaceLeft)
+                {
+                    model.CharacterList.Add(CharacterOptionModel.Parse(packet));
+                }
+            }
+
+            return model;
+        }
+
+        public static async Task<DeleteCharacterModel> DeleteCharacterAsync(long characterId, CancellationToken token)
+        {
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.CharacterDelete)
+               .SetLong(characterId), token);
+
+            DeleteCharacterModel model = new()
+            {
+                Success = packet.GetBoolean()
+            };
+
+            if (model.Success)
+            {
+                while (packet.AnySpaceLeft)
+                {
+                    model.CharacterList.Add(CharacterOptionModel.Parse(packet));
+                }
+            }
+
+            return model;
+        }
+
+        public static async Task<WalkModel> SendMovePacketAsync(float angle, float elapsedSeconds, CancellationToken token)
+        {
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.Walk)
+                .SetFloat(angle)
+                .SetFloat(elapsedSeconds), token);
+
+            return new WalkModel
+            {
+                IsoPosition = packet.GetVector2(),
+                Angle = packet.GetFloat()
+            };
         }
     }
 }

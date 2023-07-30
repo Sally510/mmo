@@ -2,7 +2,11 @@ using Assets.Scripts.Client;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -30,53 +34,49 @@ namespace Assets.Scripts
             ErrorLabel.text = string.Empty;
         }
 
-        public void OnLoginClick()
+        public async void OnLoginClick()
         {
             ErrorLabel.text = string.Empty;
 
-            StartCoroutine(Login(EmailInputField.text, PasswordInputField.text));
-        }
-
-        IEnumerator Login(string email, string password)
-        {
-
-            string json = JsonUtility.ToJson(new LoginRequest
+            var client = new HttpClient()
             {
-                email = email,
-                password = password
-            });
+                Timeout = TimeSpan.FromSeconds(2)
+            };
+            
+            string json = JsonUtility.ToJson(new LoginRequest { email = EmailInputField.text, password = PasswordInputField.text });
+            var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var authResponse = await client.PostAsync(
+                requestUri: ConfigurationManager.Config.AuthHost + "/api/auth/login",
+                content: requestContent,
+                cancellationToken: destroyCancellationToken);
 
-            UnityWebRequest www = UnityWebRequest.Post(ConfigurationManager.Config.AuthHost + "/api/auth/login", json, "application/json");
-            yield return www.SendWebRequest();
 
-            if (www.result != UnityWebRequest.Result.Success)
+            if (!authResponse.IsSuccessStatusCode)
             {
-                Debug.Log(www.error);
+                ErrorLabel.text = "Server error";
+                return;
             }
-            else
-            {
-                LoginResponse response = JsonUtility.FromJson<LoginResponse>(www.downloadHandler.text);
-                if (response.ok)
-                {
-                    yield return ClientManager.Login(response.payload.accessToken, loginModel =>
-                    {
-                        switch (loginModel.Status)
-                        {
-                            case StatusType.Success:
-                                State.CharacterOptions = loginModel.CharacterList;
-                                SceneManager.LoadScene("CharacterSelectScene");
-                                break;
-                            case StatusType.AlreadyLoggedIn:
-                                ErrorLabel.text = "User already logged in.";
-                                break;
-                            case StatusType.InvalidInformation:
-                                ErrorLabel.text = "Invalid information.";
-                                break;
-                            default:
-                                break;
-                        }
-                    });
 
+            LoginResponse response = JsonUtility.FromJson<LoginResponse>(await authResponse.Content.ReadAsStringAsync());
+
+            if (response.ok)
+            {
+                var loginModel = await ClientManager.LoginAsync(response.payload.accessToken, destroyCancellationToken);
+                switch (loginModel.Status)
+                {
+                    case StatusType.Success:
+                        State.CharacterOptions = loginModel.CharacterList;
+                        SceneManager.LoadScene("CharacterSelectScene");
+                        break;
+                    case StatusType.AlreadyLoggedIn:
+                        ErrorLabel.text = "User already logged in.";
+                        break;
+                    case StatusType.InvalidInformation:
+                        ErrorLabel.text = "Invalid information.";
+                        break;
+                    default:
+                        break;
                 }
             }
         }

@@ -58,17 +58,14 @@ namespace Assets.Scripts.Player
 
             if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
             {
-                //StartCoroutine(SendMovePacket(packet));
+                SendMovePacket(packet);
             }
         }
 
-        IEnumerator SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
+        async void SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
         {
-            yield return Client.ClientManager.SendMovePacket(packet.Angle, packet.ElapsedSeconds,
-            model =>
-            {
+            var response = await Client.ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
 
-            });
         }
 
         static readonly Vector2 TILE_SIZE = new(0.5f, 0.5f);
