@@ -1,8 +1,6 @@
 ﻿using Assets.Scripts.Client.Models;
 using System;
 using System.Collections;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace Assets.Scripts.Client
 {
@@ -109,7 +107,7 @@ namespace Assets.Scripts.Client
                    DeleteCharacterModel model = new()
                    {
                        Success = packet.GetBoolean()
-                    };
+                   };
 
                    if (model.Success)
                    {
@@ -122,6 +120,21 @@ namespace Assets.Scripts.Client
                    callback?.Invoke(model);
                }
            );
+        }
+
+        public static IEnumerator SendMovePacket(float angle, float elapsedSeconds, Action<WalkModel> callback)
+        {
+            yield return Client.Instance.BiSend(PacketBuilder.Create(PacketType.Walk)
+                .SetFloat(angle)
+                .SetFloat(elapsedSeconds),
+                packet =>
+                {
+                    callback?.Invoke(new WalkModel
+                    {
+                        IsoPosition = packet.GetVector2(),
+                        Angle = packet.GetFloat()
+                    });
+                });
         }
     }
 }

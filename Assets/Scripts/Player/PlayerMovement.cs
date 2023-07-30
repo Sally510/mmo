@@ -1,4 +1,5 @@
 using MMO.Game.Handlers;
+using System.Collections;
 using UnityEngine;
 
 namespace Assets.Scripts.Player
@@ -12,51 +13,62 @@ namespace Assets.Scripts.Player
 
         private void Awake()
         {
-            fixedJoystick.SnapX = true;
-            fixedJoystick.SnapY = true;
-
             ThrottleMovementHandler.Restart();
 
             rb = GetComponent<Rigidbody2D>();
             anim = FindObjectOfType<PlayerAnimation>();
 
-            if(State.LoggedCharacter != null)
+            if (State.LoggedCharacter != null)
             {
                 Vector2 startPosition = IsoToScreen(State.LoggedCharacter.IsoPosition);
-                Debug.Log($"{State.LoggedCharacter.IsoPosition} = {startPosition}");
+                Debug.Log($"Spawning character at: {State.LoggedCharacter.IsoPosition}");
                 rb.position = startPosition;
             }
         }
 
         private void FixedUpdate()
         {
-            
-            Vector2 currentPosition = rb.position;
-            Vector2 inputVector = Vector2.up * fixedJoystick.Vertical + Vector2.right * fixedJoystick.Horizontal;
-            anim.SetDirection(inputVector);
-
-            //Debug.Log($"{fixedJoystick.Vertical} - {fixedJoystick.Horizontal}");
             //inputVector = Vector2.ClampMagnitude(inputVector, 1);
 
-            if (inputVector != Vector2.zero)
-            {
-                Vector2 movement = moveSpeed * Time.fixedDeltaTime * inputVector;
-                Vector2 newPosition = currentPosition + movement;
-                rb.MovePosition(newPosition);
+            Vector2 currentPosition = rb.position;
+            Vector2 inputVector = (Vector2.up * fixedJoystick.Vertical + Vector2.right * fixedJoystick.Horizontal).normalized;
+            anim.SetDirection(inputVector);
 
-                if (!ThrottleMovementHandler.IsInMovement)
-                {
-                    ThrottleMovementHandler.Start(Angle(inputVector));
-                }
-            } else
+            bool inMovement = inputVector != Vector2.zero;
+            if (!inMovement)
             {
                 ThrottleMovementHandler.Stop();
             }
-
-            if (ThrottleMovementHandler.PollPacket(Time.fixedDeltaTime, rb.position, out ThrottleMovementHandler.MovementPacket packet))
+            else
             {
-                //Debug.Log($"{packet.PredictedIsoPosition} - {packet.ElapsedMillis}");
+                if (!ThrottleMovementHandler.IsInMovement)
+                {
+                    ThrottleMovementHandler.Start(Mathf.Atan2(inputVector.y, inputVector.x));
+                }
+
+                //Debug.Log($"{ToDirectionalVector(ThrottleMovementHandler.Angle.Value)} - {inputVector}");
+
+                Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
+                Debug.Log($"{directionalVector.x} {directionalVector.y}");
+                Vector2 newPosition = currentPosition + directionalVector;
+                rb.MovePosition(newPosition);
+
+                Debug.Log(ScreenToIso(newPosition));
             }
+
+            if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
+            {
+                //StartCoroutine(SendMovePacket(packet));
+            }
+        }
+
+        IEnumerator SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
+        {
+            yield return Client.ClientManager.SendMovePacket(packet.Angle, packet.ElapsedSeconds,
+            model =>
+            {
+
+            });
         }
 
         static readonly Vector2 TILE_SIZE = new(0.5f, 0.5f);
@@ -65,27 +77,21 @@ namespace Assets.Scripts.Player
             float x = position.y / TILE_SIZE.y + position.x / TILE_SIZE.x;
             float y = position.y / TILE_SIZE.y - position.x / TILE_SIZE.x;
 
-            return - new Vector2(x, y);
+            return -new Vector2(x, y);
         }
 
         internal static Vector2 IsoToScreen(Vector2 isoPosition)
         {
             float x = isoPosition.x * TILE_SIZE.x * 0.5f - isoPosition.y * TILE_SIZE.x * 0.5f;
             float y = isoPosition.x * TILE_SIZE.y * 0.5f + isoPosition.y * TILE_SIZE.y * 0.5f;
-            
+
             return new(x, -y);
         }
 
-        public static float Angle(Vector2 vector2)
+
+        public static Vector2 ToDirectionalVector(float angle)
         {
-            if (vector2.x < 0)
-            {
-                return 360 - (Mathf.Atan2(vector2.x, vector2.y) * Mathf.Rad2Deg * -1);
-            }
-            else
-            {
-                return Mathf.Atan2(vector2.x, vector2.y) * Mathf.Rad2Deg;
-            }
+            return new(Mathf.Cos(angle), Mathf.Sin(angle));
         }
     }
 }

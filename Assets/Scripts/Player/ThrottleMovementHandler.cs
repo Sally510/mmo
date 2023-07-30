@@ -64,14 +64,14 @@ namespace MMO.Game.Handlers
 
             public int Id { get; set; }
             public float Angle { get; set; }
-            public float ElapsedMillis { get; set; }
+            public float ElapsedSeconds { get; set; }
             public Vector2 PredictedIsoPosition { get; set; }
 
-            public MovementPacket(int id, float angle, float elapsedMillis, Vector2 predictedIsoPosition)
+            public MovementPacket(int id, float angle, float elapsedSeconds, Vector2 predictedIsoPosition)
             {
                 Id = id;
                 Angle = angle;
-                ElapsedMillis = elapsedMillis;
+                ElapsedSeconds = elapsedSeconds;
                 PredictedIsoPosition = predictedIsoPosition;
             }
         }
