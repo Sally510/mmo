@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using UnityEditor.Sprites;
 using UnityEngine;
+using static Assets.Scripts.Client.PacketQueue;
 
 namespace Assets.Scripts.Client
 {
@@ -57,6 +60,10 @@ namespace Assets.Scripts.Client
             return _tcp.BiSendAsync(packetBuilder, token);
         }
 
+        public Task<PacketList> GetPacketQueueAsync(PacketType type)
+        {
+            return _tcp.GetPacketQueueAsync(type);
+        }
 
         public sealed class TCP : IDisposable
         {
@@ -66,8 +73,8 @@ namespace Assets.Scripts.Client
             private readonly string _host;
             private readonly int _port;
             private readonly TcpClient _socket;
-            private readonly LinkedList<Packet> _packets;
             private readonly LinkedList<Packet> _bi_packets;
+            private readonly PacketQueue _packetQueue;
 
             private NetworkStream _stream;
 
@@ -76,8 +83,8 @@ namespace Assets.Scripts.Client
                 _host = host;
                 _port = port;
                 _socket = new TcpClient();
-                _packets = new();
                 _bi_packets = new();
+                _packetQueue = new();
             }
 
             public async Task ConnectAsync(CancellationToken token)
@@ -89,15 +96,20 @@ namespace Assets.Scripts.Client
                 {
                     Packet packet = await ReadPacketAsync(token);
                     Debug.Log($"new packet of type: {packet.PacketType}");
-                    if (packet.PacketId.HasValue)
+                    if (packet.PacketType.HasPacketId())
                     {
                         _bi_packets.AddLast(packet);
                     }
                     else
                     {
-                        _packets.AddLast(packet);
+                        await _packetQueue.AddPacketAsync(packet);
                     }
                 }
+            }
+
+            public Task<PacketList> GetPacketQueueAsync(PacketType type)
+            {
+                return _packetQueue.GetPacketQueueAsync(type);
             }
 
             public async Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
