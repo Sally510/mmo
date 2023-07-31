@@ -1,3 +1,4 @@
+using Assets.Scripts.Helpers;
 using MMO.Game.Handlers;
 using System.Collections;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace Assets.Scripts.Player
 
             if (State.LoggedCharacter != null)
             {
-                Vector2 startPosition = IsoToScreen(State.LoggedCharacter.IsoPosition);
+                Vector2 startPosition = PositionHelpers.IsoToScreen(State.LoggedCharacter.IsoPosition);
                 Debug.Log($"Spawning character at: {State.LoggedCharacter.IsoPosition}");
                 rb.position = startPosition;
             }
@@ -48,17 +49,17 @@ namespace Assets.Scripts.Player
 
                 //Debug.Log($"{ToDirectionalVector(ThrottleMovementHandler.Angle.Value)} - {inputVector}");
 
-                Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
+                Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * PositionHelpers.ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
                 Debug.Log($"{directionalVector.x} {directionalVector.y}");
                 Vector2 newPosition = currentPosition + directionalVector;
                 rb.MovePosition(newPosition);
 
-                Debug.Log(ScreenToIso(newPosition));
+                Debug.Log(PositionHelpers.ScreenToIso(newPosition));
             }
 
             if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
             {
-                SendMovePacket(packet);
+                //SendMovePacket(packet);
             }
         }
 
@@ -66,29 +67,6 @@ namespace Assets.Scripts.Player
         {
             var response = await Client.ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
 
-        }
-
-        static readonly Vector2 TILE_SIZE = new(0.5f, 0.5f);
-        internal static Vector2 ScreenToIso(Vector2 position)
-        {
-            float x = position.y / TILE_SIZE.y + position.x / TILE_SIZE.x;
-            float y = position.y / TILE_SIZE.y - position.x / TILE_SIZE.x;
-
-            return -new Vector2(x, y);
-        }
-
-        internal static Vector2 IsoToScreen(Vector2 isoPosition)
-        {
-            float x = isoPosition.x * TILE_SIZE.x * 0.5f - isoPosition.y * TILE_SIZE.x * 0.5f;
-            float y = isoPosition.x * TILE_SIZE.y * 0.5f + isoPosition.y * TILE_SIZE.y * 0.5f;
-
-            return new(x, -y);
-        }
-
-
-        public static Vector2 ToDirectionalVector(float angle)
-        {
-            return new(Mathf.Cos(angle), Mathf.Sin(angle));
         }
     }
 }
