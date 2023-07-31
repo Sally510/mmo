@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Client.Models;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -121,6 +122,34 @@ namespace Assets.Scripts.Client
                 IsoPosition = packet.GetVector2(),
                 Angle = packet.GetFloat()
             };
+        }
+
+        public static async Task<List<InventoryItemModel>> GetInventoryItems(CancellationToken token)
+        {
+            var items = new List<InventoryItemModel>();
+
+            Packet packet = await Client.Instance.BiSendAsync(new PacketBuilder(PacketType.GetInventoryItems), token);
+
+            while (packet.AnySpaceLeft)
+            {
+                items.Add(InventoryItemModel.Parse(packet));
+            }
+
+            return items;
+        }
+
+        public static async Task<List<EquippedItemModel>> GetEquippedItems(CancellationToken token)
+        {
+            var items = new List<EquippedItemModel>();
+
+            Packet packet = await Client.Instance.BiSendAsync(new PacketBuilder(PacketType.GetEquippedItems), token);
+
+            while (packet.AnySpaceLeft)
+            {
+                items.Add(EquippedItemModel.Parse(packet));
+            }
+
+            return items;
         }
     }
 }

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class CameraController: MonoBehaviour
+    public class CameraController : MonoBehaviour
     {
         Transform followTarget;
         private Vector3 targetPos;
