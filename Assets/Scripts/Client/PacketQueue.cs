@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Assets.Scripts.Client.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace Assets.Scripts.Client
 {
@@ -41,12 +43,12 @@ namespace Assets.Scripts.Client
             }
         }
 
-        public async Task<PacketList> GetPacketQueueAsync(PacketType type)
+        public async Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
         {
             if (type.HasPacketId())
                 throw new Exception("Can not get client side packets");
 
-            await _packetLock.WaitAsync();
+            await _packetLock.WaitAsync(token);
             try
             {
                 return PacketList.EmptyQueue(_packets[type]);
@@ -57,14 +59,14 @@ namespace Assets.Scripts.Client
             }
         }
 
-        public sealed class PacketList : IDisposable
+        public sealed class PacketList : IDisposable 
         {
             private readonly bool _empty;
             private readonly List<Packet> _packets;
             public List<Packet> Packets { get => _packets; }
 
             private static readonly PacketList Empty = new(new List<Packet>(), true);
-   
+    
             private PacketList(List<Packet> packets, bool empty)
             {
                 _packets = packets;
@@ -80,6 +82,19 @@ namespace Assets.Scripts.Client
                     return list;
                 }
                 return Empty;
+            }
+
+            public List<T> ToDeserializedList<T>()
+                where T : IPacketSerializable, new()
+            {
+                List<T> list = new();
+                foreach(var packet in _packets)
+                {
+                    T res = new();
+                    res.Deserialize(packet);
+                    list.Add(res);
+                }
+                return list;
             }
 
             public void Dispose()

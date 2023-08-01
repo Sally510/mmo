@@ -1,14 +1,10 @@
 using Assets.Scripts.Client;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using TMPro;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using static Assets.Scripts.Client.Models.LoginModel;
 
@@ -25,12 +21,12 @@ namespace Assets.Scripts
             ConfigurationManager.Clear();
             State.Clear();
 
-            if(ConfigurationManager.Config.DefaultLogin != null)
+            if (ConfigurationManager.Config.DefaultLogin != null)
             {
                 EmailInputField.text = ConfigurationManager.Config.DefaultLogin.Username;
                 PasswordInputField.text = ConfigurationManager.Config.DefaultLogin.Password;
             }
-            
+
             ErrorLabel.text = string.Empty;
         }
 
@@ -42,10 +38,10 @@ namespace Assets.Scripts
             {
                 Timeout = TimeSpan.FromSeconds(2)
             };
-            
+
             string json = JsonUtility.ToJson(new LoginRequest { email = EmailInputField.text, password = PasswordInputField.text });
             var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             var authResponse = await client.PostAsync(
                 requestUri: ConfigurationManager.Config.AuthHost + "/api/auth/login",
                 content: requestContent,

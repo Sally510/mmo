@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Assets.Scripts.Client.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
-using UnityEditor.Sprites;
 using UnityEngine;
 using static Assets.Scripts.Client.PacketQueue;
 
@@ -55,14 +54,17 @@ namespace Assets.Scripts.Client
             return _tcp.UniSendAsync(packetBuilder, token);
         }
 
-        public Task<Packet> BiSendAsync(PacketBuilder packetBuilder, CancellationToken token)
+        public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token) where T : IPacketSerializable, new()
         {
-            return _tcp.BiSendAsync(packetBuilder, token);
+            Packet packet = await _tcp.BiSendAsync(packetBuilder, token);
+            T res = new();
+            res.Deserialize(packet);
+            return res;
         }
 
-        public Task<PacketList> GetPacketQueueAsync(PacketType type)
+        public Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
         {
-            return _tcp.GetPacketQueueAsync(type);
+            return _tcp.GetPacketQueueAsync(type, token);
         }
 
         public sealed class TCP : IDisposable
@@ -107,9 +109,9 @@ namespace Assets.Scripts.Client
                 }
             }
 
-            public Task<PacketList> GetPacketQueueAsync(PacketType type)
+            public Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
             {
-                return _packetQueue.GetPacketQueueAsync(type);
+                return _packetQueue.GetPacketQueueAsync(type, token);
             }
 
             public async Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
