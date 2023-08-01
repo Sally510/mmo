@@ -95,7 +95,7 @@ namespace Assets.Scripts.Client
                 while (!token.IsCancellationRequested)
                 {
                     Packet packet = await ReadPacketAsync(token);
-                    Debug.Log($"new packet of type: {packet.PacketType}");
+                    //Debug.Log($"new packet of type: {packet.PacketType}");
                     if (packet.PacketType.HasPacketId())
                     {
                         _bi_packets.AddLast(packet);
