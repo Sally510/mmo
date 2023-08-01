@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Helpers;
+using UnityEngine;
+using UnityEngine.Device;
 using UnityEngine.Tilemaps;
 
 namespace Assets.Scripts
@@ -31,9 +33,9 @@ namespace Assets.Scripts
                 Vector3 mousePos = Input.mousePosition;
                 {
                     var worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-                    Debug.Log($"{worldPos.x} {worldPos.y}");
-                    //var cell = tileMap.WorldToCell(worldPos);
-                    //Debug.Log($"{cell.x} {cell.y}");
+                    var isoPosition = PositionHelpers.WorldToIso(worldPos);
+              
+                    Debug.Log($"Iso: {isoPosition}");
                 }
             }
         }

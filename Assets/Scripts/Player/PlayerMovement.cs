@@ -21,7 +21,7 @@ namespace Assets.Scripts.Player
 
             if (State.LoggedCharacter != null)
             {
-                Vector2 startPosition = PositionHelpers.IsoToScreen(State.LoggedCharacter.IsoPosition);
+                Vector2 startPosition = PositionHelpers.IsoToWorld(State.LoggedCharacter.IsoPosition);
                 Debug.Log($"Spawning character at: {State.LoggedCharacter.IsoPosition}");
                 rb.position = startPosition;
             }
@@ -54,12 +54,12 @@ namespace Assets.Scripts.Player
                 Vector2 newPosition = currentPosition + directionalVector;
                 rb.MovePosition(newPosition);
 
-                Debug.Log(PositionHelpers.ScreenToIso(newPosition));
+                Debug.Log(PositionHelpers.WorldToIso(newPosition));
             }
 
             if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
             {
-                //SendMovePacket(packet);
+                SendMovePacket(packet);
             }
         }
 
