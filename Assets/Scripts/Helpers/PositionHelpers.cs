@@ -27,5 +27,21 @@ namespace Assets.Scripts.Helpers
         {
             return new(Mathf.Cos(angle), Mathf.Sin(angle));
         }
+
+        public static Vector3 FromIsoToWorld(this Vector2 iso)
+        {
+            Vector3 world = IsoToWorld(iso);
+            world.z = 1;
+
+            return world;
+        }
+
+        public static Vector3 FromWorldToIso(this Vector2 world)
+        {
+            Vector3 iso = WorldToIso(world);
+            iso.z = 1;
+
+            return iso;
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace Assets.Scripts.Player
             ThrottleMovementHandler.Restart();
 
             rb = GetComponent<Rigidbody2D>();
-            anim = FindObjectOfType<PlayerAnimation>();
+            anim = GetComponentInChildren<PlayerAnimation>();
 
             if (State.LoggedCharacter != null)
             {
@@ -50,11 +50,11 @@ namespace Assets.Scripts.Player
                 //Debug.Log($"{ToDirectionalVector(ThrottleMovementHandler.Angle.Value)} - {inputVector}");
 
                 Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * PositionHelpers.ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
-                Debug.Log($"{directionalVector.x} {directionalVector.y}");
+                //Debug.Log($"{directionalVector.x} {directionalVector.y}");
                 Vector2 newPosition = currentPosition + directionalVector;
                 rb.MovePosition(newPosition);
 
-                Debug.Log(PositionHelpers.WorldToIso(newPosition));
+                //Debug.Log(PositionHelpers.WorldToIso(newPosition));
             }
 
             if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
