@@ -2,7 +2,7 @@
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace MMO.Game.Handlers
+namespace Assets.Scripts.Player
 {
     public static class ThrottleMovementHandler
     {

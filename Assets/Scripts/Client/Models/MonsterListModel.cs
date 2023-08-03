@@ -22,14 +22,14 @@ namespace Assets.Scripts.Client.Models
                 });
             }
         }
+    }
 
-        public class MonsterModel
-        {
-            public uint EntityId { get; set; }
-            public int Health { get; set; }
-            public int MaxHealth { get; set; }
-            public Vector2 Position { get; set; }
-            public float Direction { get; set; }
-        }
+    public class MonsterModel
+    {
+        public uint EntityId { get; set; }
+        public int Health { get; set; }
+        public int MaxHealth { get; set; }
+        public Vector2 Position { get; set; }
+        public float Direction { get; set; }
     }
 }

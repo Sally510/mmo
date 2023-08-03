@@ -84,17 +84,22 @@ namespace Assets.Scripts.Client
                 return Empty;
             }
 
-            public List<T> ToDeserializedList<T>()
+            public IEnumerable<T> ToDeserializedList<T>()
                 where T : IPacketSerializable, new()
             {
-                List<T> list = new();
-                foreach(var packet in _packets)
+                if(_packets.Count > 0)
                 {
-                    T res = new();
-                    res.Deserialize(packet);
-                    list.Add(res);
+                    List<T> list = new(_packets.Count);
+                    foreach (var packet in _packets)
+                    {
+                        T res = new();
+                        res.Deserialize(packet);
+                        list.Add(res);
+                    }
+                    return list;
                 }
-                return list;
+
+                return Enumerable.Empty<T>();
             }
 
             public void Dispose()

@@ -1,6 +1,4 @@
 using Assets.Scripts.Helpers;
-using MMO.Game.Handlers;
-using System.Collections;
 using UnityEngine;
 
 namespace Assets.Scripts.Player
