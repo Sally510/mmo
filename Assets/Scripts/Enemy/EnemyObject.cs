@@ -11,8 +11,6 @@ namespace Assets.Scripts.Enemy
         private readonly Rigidbody2D _rigidBody;
         private readonly PlayerAnimation _animation;
         public AutoMovementManager AutoMovement { get; set; }
-        public Rigidbody2D Rigidbody { get => _rigidBody; }
-        public PlayerAnimation Animation { get => _animation; }
 
         public EnemyObject(MonsterModel monster, GameObject gameObject)
         {
@@ -20,6 +18,18 @@ namespace Assets.Scripts.Enemy
             _gameObject = gameObject;
             _rigidBody = gameObject.GetComponent<Rigidbody2D>();
             _animation = gameObject.GetComponentInChildren<PlayerAnimation>();
+        }
+
+        public void MoveTo(Vector2 worldPosition)
+        {
+            Vector2 oldPos = _rigidBody.position;
+            _rigidBody.MovePosition(worldPosition);
+            _animation.SetDirection((worldPosition - oldPos).normalized);
+        }
+
+        public void StopMove()
+        {
+            _animation.SetDirection(Vector2.zero);
         }
     }
 }

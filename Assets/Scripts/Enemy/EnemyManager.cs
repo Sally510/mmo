@@ -22,15 +22,13 @@ namespace Assets.Scripts.Enemy
                     if (obj.AutoMovement.IsDone)
                     {
                         obj.AutoMovement = null;
-                        obj.Animation.SetDirection(Vector2.zero);
+                        obj.StopMove();
                     }
                     else
                     {
                         obj.AutoMovement.Update(Time.fixedDeltaTime);
                         Vector3 worldPos = obj.AutoMovement.CurrentIsoPosition().FromIsoToWorld();
-                        Vector3 oldPos = obj.Rigidbody.position;
-                        obj.Rigidbody.MovePosition(worldPos);
-                        obj.Animation.SetDirection((worldPos - oldPos).normalized);
+                        obj.MoveTo(worldPos);
                     }
                 }
             }
