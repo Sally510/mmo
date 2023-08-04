@@ -1,9 +1,8 @@
-﻿using Assets.Scripts.Client.Models;
+﻿using Assets.Scripts.Client;
+using Assets.Scripts.Client.Models;
 using Assets.Scripts.Helpers;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
-using static Assets.Scripts.Client.PacketQueue;
 
 namespace Assets.Scripts.Enemy
 {
@@ -11,7 +10,7 @@ namespace Assets.Scripts.Enemy
     {
         [SerializeField]
         private GameObject enemyPrefab;
-        private Dictionary<uint, EnemyObject> enemies = new();
+        private readonly Dictionary<uint, EnemyObject> enemies = new();
 
         void FixedUpdate()
         {
@@ -34,74 +33,64 @@ namespace Assets.Scripts.Enemy
             }
         }
 
-        async void Update()
+        void OnEnable()
         {
-            await CheckMonsterInfo();
-            await CheckMonsterChange();
-            await CheckAutoWalks();
-
-
+            PacketEventHandler.MonsterInfoEvent += PacketEventHandler_MonsterInfoEvent;
+            PacketEventHandler.MonsterChangeEvent += PacketEventHandler_MonsterChangeEvent;
+            PacketEventHandler.AutoWalkEvent += PacketEventHandler_AutoWalkEvent;
         }
 
-        async Task CheckAutoWalks()
+        private void OnDisable()
         {
-            PacketList packetList = await Client.Client.Instance.GetPacketQueueAsync(Client.PacketType.AutoWalk, destroyCancellationToken);
+            PacketEventHandler.MonsterInfoEvent -= PacketEventHandler_MonsterInfoEvent;
+            PacketEventHandler.MonsterChangeEvent -= PacketEventHandler_MonsterChangeEvent;
+            PacketEventHandler.AutoWalkEvent -= PacketEventHandler_AutoWalkEvent;
+        }
 
-            foreach (AutoWalkModel autowalk in packetList.ToDeserializedList<AutoWalkModel>())
+        private void PacketEventHandler_AutoWalkEvent(object sender, AutoWalkModel e)
+        {
+            if (enemies.TryGetValue(e.EntityId, out EnemyObject enemy))
             {
-                if (enemies.TryGetValue(autowalk.EntityId, out EnemyObject enemy))
+                enemy.AutoMovement = new AutoMovementManager(e.StartTime, e.WalkDuration, e.Moves);
+            }
+        }
+
+        private void PacketEventHandler_MonsterChangeEvent(object sender, MonsterChangeListModel e)
+        {
+            foreach (MonsterChangeListModel.MonsterChange change in e.Changes)
+            {
+                if (change.HasFlag(ChangeState.Spawn))
                 {
-                    enemy.AutoMovement = new AutoMovementManager(autowalk.StartTime, autowalk.WalkDuration, autowalk.Moves);
+                    Debug.Log($"Spawn: {change.EntityId}");
+                    if (enemies.TryGetValue(change.EntityId, out EnemyObject enemy))
+                    {
+                        //monster.GetComponent<Rigidbody2D>().MovePosition(change.Position.FromIsoToWorld());
+
+                        //monster.Direction = change.Direction;
+                        //monster.Heal(change.Health);
+                    }
+                }
+                if (change.HasFlag(ChangeState.Damaged))
+                {
+                    Debug.Log($"Damaged: {change.EntityId}");
+                }
+                if (change.HasFlag(ChangeState.Died))
+                {
+                    Debug.Log($"Died: {change.EntityId}");
+                }
+                if (change.HasFlag(ChangeState.Attack))
+                {
+                    Debug.Log($"Entity {change.EntityId} attacked!");
                 }
             }
         }
 
-        async Task CheckMonsterChange()
+        private void PacketEventHandler_MonsterInfoEvent(object sender, MonsterListModel e)
         {
-            PacketList changePacketList = await Client.Client.Instance.GetPacketQueueAsync(Client.PacketType.MonsterChange, destroyCancellationToken);
-
-            foreach (MonsterChangeListModel changes in changePacketList.ToDeserializedList<MonsterChangeListModel>())
+            foreach (MonsterModel monster in e.Monsters)
             {
-                foreach (MonsterChangeListModel.MonsterChange change in changes.Changes)
-                {
-                    if (change.HasFlag(ChangeState.Spawn))
-                    {
-                        Debug.Log($"Spawn: {change.EntityId}");
-                        if (enemies.TryGetValue(change.EntityId, out EnemyObject enemy))
-                        {
-                            //monster.GetComponent<Rigidbody2D>().MovePosition(change.Position.FromIsoToWorld());
-
-                            //monster.Direction = change.Direction;
-                            //monster.Heal(change.Health);
-                        }
-                    }
-                    if (change.HasFlag(ChangeState.Damaged))
-                    {
-                        Debug.Log($"Damaged: {change.EntityId}");
-                    }
-                    if (change.HasFlag(ChangeState.Died))
-                    {
-                        Debug.Log($"Died: {change.EntityId}");
-                    }
-                    if (change.HasFlag(ChangeState.Attack))
-                    {
-                        Debug.Log($"Entity {change.EntityId} attacked!");
-                    }
-                }
-            }
-        }
-
-        async Task CheckMonsterInfo()
-        {
-            PacketList packetList = await Client.Client.Instance.GetPacketQueueAsync(Client.PacketType.MonsterInfo, destroyCancellationToken);
-
-            foreach (MonsterListModel monsterList in packetList.ToDeserializedList<MonsterListModel>())
-            {
-                foreach (MonsterModel monster in monsterList.Monsters)
-                {
-                    GameObject enemyObject = Instantiate(enemyPrefab, monster.Position.FromIsoToWorld(), Quaternion.identity);
-                    enemies.Add(monster.EntityId, new EnemyObject(monster, enemyObject));
-                }
+                GameObject enemyObject = Instantiate(enemyPrefab, monster.Position.FromIsoToWorld(), Quaternion.identity);
+                enemies.Add(monster.EntityId, new EnemyObject(monster, enemyObject));
             }
         }
     }

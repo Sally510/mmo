@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using static Assets.Scripts.Client.PacketQueue;
 
@@ -44,9 +45,30 @@ namespace Assets.Scripts.Client
             }
         }
 
+        async void Update()
+        {
+            if(_tcp.Enabled)
+            {
+                PacketMap packetMap = await _tcp.GetPacketMapAsync(destroyCancellationToken);
+                if (!packetMap.IsEmpty)
+                {
+                    foreach (var packetEntry in packetMap.Map)
+                    {
+                        PacketEventHandler.RaiseEvent(packetEntry.Value);
+                    }
+                }
+            }
+        }
+
         void Reset()
         {
+            Destroy(Instance);
             Instance = null;
+        }
+
+        public void SetEnabled(bool enabled)
+        {
+            _tcp.Enabled = enabled;
         }
 
         public Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
@@ -54,17 +76,11 @@ namespace Assets.Scripts.Client
             return _tcp.UniSendAsync(packetBuilder, token);
         }
 
-        public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token) where T : IPacketSerializable, new()
+        public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token) 
+            where T : IPacketSerializable, new()
         {
             Packet packet = await _tcp.BiSendAsync(packetBuilder, token);
-            T res = new();
-            res.Deserialize(packet);
-            return res;
-        }
-
-        public Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
-        {
-            return _tcp.GetPacketQueueAsync(type, token);
+            return packet.ToSerializedPacket<T>();
         }
 
         public sealed class TCP : IDisposable
@@ -79,6 +95,8 @@ namespace Assets.Scripts.Client
             private readonly PacketQueue _packetQueue;
 
             private NetworkStream _stream;
+
+            public bool Enabled { get; set; }
 
             public TCP(string host, int port)
             {
@@ -109,9 +127,9 @@ namespace Assets.Scripts.Client
                 }
             }
 
-            public Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
+            public Task<PacketMap> GetPacketMapAsync(CancellationToken token)
             {
-                return _packetQueue.GetPacketQueueAsync(type, token);
+                return _packetQueue.GetPacketMapAsync(token);
             }
 
             public async Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)

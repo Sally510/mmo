@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Client.Models
 {
-    internal class MonsterChangeListModel : IPacketSerializable
+    public class MonsterChangeListModel : IPacketSerializable
     {
         public List<MonsterChange> Changes { get; set; } = new();
 

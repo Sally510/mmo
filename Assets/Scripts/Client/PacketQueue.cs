@@ -1,19 +1,16 @@
-﻿using Assets.Scripts.Client.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
-using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace Assets.Scripts.Client
 {
     public class PacketQueue
     {
         private readonly SemaphoreSlim _packetLock = new(1, 1);
-        private readonly Dictionary<PacketType, Queue<Packet>> _packets;
+        private readonly Dictionary<PacketType, List<Packet>> _packets;
 
         public PacketQueue()
         {
@@ -23,7 +20,7 @@ namespace Assets.Scripts.Client
                 .Cast<PacketType>()
                 .Where(x => !x.HasPacketId()))
             {
-                _packets.Add(type, new Queue<Packet>());
+                _packets.Add(type, new List<Packet>());
             }
         }
 
@@ -35,7 +32,7 @@ namespace Assets.Scripts.Client
             await _packetLock.WaitAsync();
             try
             {
-                _packets[packet.PacketType].Enqueue(packet);
+                _packets[packet.PacketType].Add(packet);
             }
             finally
             {
@@ -43,70 +40,49 @@ namespace Assets.Scripts.Client
             }
         }
 
-        public async Task<PacketList> GetPacketQueueAsync(PacketType type, CancellationToken token)
+        public async Task<PacketMap> GetPacketMapAsync(CancellationToken token)
         {
-            if (type.HasPacketId())
-                throw new Exception("Can not get client side packets");
-
             await _packetLock.WaitAsync(token);
             try
             {
-                return PacketList.EmptyQueue(_packets[type]);
+                PacketMap packetMap = null;
+
+                foreach (var packet in _packets.Where(x => x.Value.Count > 0))
+                {
+                    packetMap ??= new();
+                    packetMap.Add(packet.Key, packet.Value);
+                    packet.Value.Clear();
+                }
+
+                return packetMap ?? PacketMap.Empty;
             }
             finally
             {
                 _packetLock.Release();
             }
         }
+    }
 
-        public sealed class PacketList : IDisposable 
+    public sealed class PacketMap : IDisposable
+    {
+        public static readonly PacketMap Empty = new();
+
+        private readonly Dictionary<PacketType, Packet[]> _map = new();
+        public Dictionary<PacketType, Packet[]> Map { get => _map; }
+        public bool IsEmpty => Map.Count == 0;
+
+        public void Add(PacketType type, List<Packet> packets)
         {
-            private readonly bool _empty;
-            private readonly List<Packet> _packets;
-            public List<Packet> Packets { get => _packets; }
+            _map.Add(type, packets.ToArrayPooled());
+        }
 
-            private static readonly PacketList Empty = new(new List<Packet>(), true);
-    
-            private PacketList(List<Packet> packets, bool empty)
+        public void Dispose()
+        {
+            if (_map != null && _map.Count > 0)
             {
-                _packets = packets;
-                _empty = empty;
-            }
-
-            public static PacketList EmptyQueue(Queue<Packet> packets)
-            {
-                if(packets.Count > 0)
+                foreach (Packet[] packet in _map.Values)
                 {
-                    PacketList list = new(packets.ToListPooled(), false);
-                    packets.Clear();
-                    return list;
-                }
-                return Empty;
-            }
-
-            public IEnumerable<T> ToDeserializedList<T>()
-                where T : IPacketSerializable, new()
-            {
-                if(_packets.Count > 0)
-                {
-                    List<T> list = new(_packets.Count);
-                    foreach (var packet in _packets)
-                    {
-                        T res = new();
-                        res.Deserialize(packet);
-                        list.Add(res);
-                    }
-                    return list;
-                }
-
-                return Enumerable.Empty<T>();
-            }
-
-            public void Dispose()
-            {
-                if (!_empty)
-                {
-                    _packets?.Free();
+                    packet?.Free();
                 }
             }
         }
