@@ -6,6 +6,12 @@ namespace Assets.Scripts.Client
 {
     public static class ClientManager
     {
+        public static Task AttackEnemy(uint entityId, CancellationToken token)
+        {
+            return Client.Instance.UniSendAsync(PacketBuilder.Create(PacketType.StartAttack)
+                .SetInt((int)entityId), token);
+        }
+
         public static Task<LoginModel> LoginAsync(string access, CancellationToken token)
         {
             return Client.Instance.BiSendAsync<LoginModel>(PacketBuilder.Create(PacketType.Login)

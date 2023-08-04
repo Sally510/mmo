@@ -1,23 +1,26 @@
 ﻿using Assets.Scripts.Client.Models;
 using Assets.Scripts.Player;
+using System.Threading;
 using UnityEngine;
 
 namespace Assets.Scripts.Enemy
 {
-    public class EnemyObject
+    public class EnemyObject: MonoBehaviour
     {
-        private readonly MonsterModel _monster;
-        private readonly GameObject _gameObject;
-        private readonly Rigidbody2D _rigidBody;
-        private readonly PlayerAnimation _animation;
+        public MonsterModel Monster { get; private set; }
+        private Rigidbody2D _rigidBody;
+        private PlayerAnimation _animation;
         public AutoMovementManager AutoMovement { get; set; }
 
-        public EnemyObject(MonsterModel monster, GameObject gameObject)
+        private void Start()
         {
-            _monster = monster;
-            _gameObject = gameObject;
-            _rigidBody = gameObject.GetComponent<Rigidbody2D>();
-            _animation = gameObject.GetComponentInChildren<PlayerAnimation>();
+            _rigidBody = GetComponent<Rigidbody2D>();
+            _animation = GetComponentInChildren<PlayerAnimation>();
+        }
+
+        public void Initialize(MonsterModel monster)
+        {
+            Monster = monster;
         }
 
         public void MoveTo(Vector2 worldPosition)

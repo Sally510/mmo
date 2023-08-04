@@ -90,7 +90,9 @@ namespace Assets.Scripts.Enemy
             foreach (MonsterModel monster in e.Monsters)
             {
                 GameObject enemyObject = Instantiate(enemyPrefab, monster.Position.FromIsoToWorld(), Quaternion.identity);
-                enemies.Add(monster.EntityId, new EnemyObject(monster, enemyObject));
+                var obj = enemyObject.GetComponent<EnemyObject>();
+                obj.Initialize(monster);
+                enemies.Add(monster.EntityId, obj);
             }
         }
     }

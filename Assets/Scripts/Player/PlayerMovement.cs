@@ -1,3 +1,5 @@
+using Assets.Scripts.Client;
+using Assets.Scripts.Enemy;
 using Assets.Scripts.Helpers;
 using UnityEngine;
 
@@ -61,10 +63,45 @@ namespace Assets.Scripts.Player
             }
         }
 
+        void Update()
+        {
+            Vector3? worldPos = null;
+            //foreach (Touch touch in Input.touches)
+            //{
+            //    if(touch.phase == TouchPhase.Ended)
+            //    {
+            //        worldPos = Camera.main.ScreenToWorldPoint(touch.position);
+            //        break;
+            //    }
+            //}
+            if (Input.GetButtonDown("Fire1"))
+            {
+                worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            }
+
+            if (worldPos.HasValue)
+            {
+                var collider = Physics2D.OverlapPoint(worldPos.Value);
+                if(collider != null)
+                {
+                    if(collider.TryGetComponent(out EnemyObject enemy))
+                    {
+                        AttackEnemy(enemy.Monster.EntityId);
+                    }
+                }
+            }
+        }
+
         async void SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
         {
-            var response = await Client.ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
+            var response = await ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
+            //TODO: handle conflicts
+        }
 
+        async void AttackEnemy(uint entityId)
+        {
+            Debug.Log($"Attacking enemy {entityId}");
+            await ClientManager.AttackEnemy(entityId, destroyCancellationToken);
         }
     }
 }
