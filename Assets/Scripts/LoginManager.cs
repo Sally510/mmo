@@ -35,7 +35,10 @@ namespace Assets.Scripts
         {
             ErrorLabel.text = string.Empty;
 
-            using HttpClient client = new()
+            using HttpClient client = new(new HttpClientHandler
+            {
+                Proxy = System.Net.WebRequest.DefaultWebProxy
+            })
             {
                 BaseAddress = new Uri(ConfigurationManager.Config.AuthHost)
             };
