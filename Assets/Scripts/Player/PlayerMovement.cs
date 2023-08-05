@@ -12,6 +12,8 @@ namespace Assets.Scripts.Player
         public FixedJoystick fixedJoystick;
         [SerializeField] private float moveSpeed = 3.0f;
 
+        public AutoMovementManager AutoMovement { get; set; }
+
         private void Awake()
         {
             ThrottleMovementHandler.Restart();
@@ -29,32 +31,47 @@ namespace Assets.Scripts.Player
 
         private void FixedUpdate()
         {
-            //inputVector = Vector2.ClampMagnitude(inputVector, 1);
+            bool inMovement = false;
 
-            Vector2 currentPosition = rb.position;
-            Vector2 inputVector = (Vector2.up * fixedJoystick.Vertical + Vector2.right * fixedJoystick.Horizontal).normalized;
-            anim.SetDirection(inputVector);
-
-            bool inMovement = inputVector != Vector2.zero;
-            if (!inMovement)
+            if (AutoMovement != null)
             {
-                ThrottleMovementHandler.Stop();
-            }
-            else
-            {
-                if (!ThrottleMovementHandler.IsInMovement)
+                if (AutoMovement.IsDone)
                 {
-                    ThrottleMovementHandler.Start(Mathf.Atan2(inputVector.y, inputVector.x));
+                    AutoMovement = null;
+                    anim.SetDirection(Vector2.zero);
                 }
+                else
+                {
+                    AutoMovement.Update(Time.fixedDeltaTime);
+                    Vector2 worldPos = AutoMovement.CurrentIsoPosition().FromIsoToWorld();
 
-                //Debug.Log($"{ToDirectionalVector(ThrottleMovementHandler.Angle.Value)} - {inputVector}");
+                    Vector2 oldPos = rb.position;
+                    rb.MovePosition(worldPos);
+                    anim.SetDirection((worldPos - oldPos).normalized);
+                }
+            } else
+            {
 
-                Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * PositionHelpers.ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
-                //Debug.Log($"{directionalVector.x} {directionalVector.y}");
-                Vector2 newPosition = currentPosition + directionalVector;
-                rb.MovePosition(newPosition);
+                Vector2 currentPosition = rb.position;
+                Vector2 inputVector = (Vector2.up * fixedJoystick.Vertical + Vector2.right * fixedJoystick.Horizontal).normalized;
+                anim.SetDirection(inputVector);
 
-                //Debug.Log(PositionHelpers.WorldToIso(newPosition));
+                inMovement = inputVector != Vector2.zero;
+                if (!inMovement)
+                {
+                    ThrottleMovementHandler.Stop();
+                }
+                else
+                {
+                    if (!ThrottleMovementHandler.IsInMovement)
+                    {
+                        ThrottleMovementHandler.Start(Mathf.Atan2(inputVector.y, inputVector.x));
+                    }
+
+                    Vector2 directionalVector = moveSpeed * Time.fixedDeltaTime * PositionHelpers.ToDirectionalVector(ThrottleMovementHandler.Angle.Value);
+                    Vector2 newPosition = currentPosition + directionalVector;
+                    rb.MovePosition(newPosition);
+                }
             }
 
             if (ThrottleMovementHandler.PollPacket(inMovement ? Time.fixedDeltaTime : .0f, rb.position, out ThrottleMovementHandler.MovementPacket packet))
@@ -92,6 +109,17 @@ namespace Assets.Scripts.Player
             }
         }
 
+
+
+        private void PacketEventHandler_AutoWalkEvent(object sender, Client.Models.AutoWalkModel e)
+        {
+            if(e.EntityId == State.LoggedCharacter.EntityId)
+            {
+                AutoMovement = new AutoMovementManager(e.StartTime, e.WalkDuration, e.Moves);
+                ThrottleMovementHandler.Restart();
+            }
+        }
+
         async void SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
         {
             var response = await ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
@@ -102,6 +130,16 @@ namespace Assets.Scripts.Player
         {
             Debug.Log($"Attacking enemy {entityId}");
             await ClientManager.AttackEnemy(entityId, destroyCancellationToken);
+        }
+
+        private void OnEnable()
+        {
+            PacketEventHandler.AutoWalkEvent += PacketEventHandler_AutoWalkEvent;
+        }
+
+        private void OnDisable()
+        {
+            PacketEventHandler.AutoWalkEvent -= PacketEventHandler_AutoWalkEvent;
         }
     }
 }
