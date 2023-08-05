@@ -6,12 +6,6 @@ public class InventoryPage : MonoBehaviour
 {
     public GameObject Panel;
 
-    [SerializeField]
-    private GameObject _itemPrefab;
-
-    [SerializeField]
-    private GameObject _itemParent;
-
     public void TogglePanel()
     {
         if (Panel != null)
