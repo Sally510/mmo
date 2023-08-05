@@ -4,14 +4,14 @@ using Assets.Scripts.Configuration.Models;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class InventoryManager : MonoBehaviour
 {
-    //[SerializeField]
-    //private InventoryPage _inventoryPage;
     public InventorySlot[] inventorySlots;
+    public GameObject inventoryItemPrefab;
     
-    public void AddItem(InventoryItem item)
+    public void AddItem(string name, int quantity)
     {
         // Find any empty slot
         for (int i = 0; i < inventorySlots.Length; i++)
@@ -20,17 +20,18 @@ public class InventoryManager : MonoBehaviour
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
             if (itemInSlot == null)
             {
-                SpawnNewItem(item, slot);
+                SpawnNewItem(slot, name, quantity);
                 return;
             }
         }
     }
 
-    void SpawnNewItem(InventoryItem item, InventorySlot slot)
+    void SpawnNewItem(InventorySlot slot, string name, int quantity)
     {
         
-        //GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
-
+        GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
+        newItem.GetComponent<InventoryItem>().itemName.text = name;
+        newItem.GetComponent<InventoryItem>().itemQuantity.text = quantity.ToString();
     }
 
     public void Start()
@@ -39,7 +40,7 @@ public class InventoryManager : MonoBehaviour
         {
             if(ConfigurationManager.ItemMap.TryGetValue(inventoryItem.ItemId, out ItemModel item))
             {
-                //add item here...
+                AddItem(item.Name,inventoryItem.Quantity);
             }
         }
     }
