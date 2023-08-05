@@ -17,6 +17,8 @@ namespace Assets.Scripts
         {
             CharacterOptions = new();
             LoggedCharacter = null;
+            InventoryItems = null;
+            EquippedItems = null;
         }
     }
 }
