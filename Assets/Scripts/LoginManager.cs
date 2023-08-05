@@ -35,16 +35,16 @@ namespace Assets.Scripts
         {
             ErrorLabel.text = string.Empty;
 
-            var client = new HttpClient()
+            using HttpClient client = new()
             {
-                Timeout = TimeSpan.FromSeconds(2)
+                BaseAddress = new Uri(ConfigurationManager.Config.AuthHost)
             };
 
             string json = JsonUtility.ToJson(new LoginRequest { email = EmailInputField.text, password = PasswordInputField.text });
-            using var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
+            using StringContent requestContent = new(json, Encoding.UTF8, "application/json");
 
             using var authResponse = await client.PostAsync(
-                requestUri: ConfigurationManager.Config.AuthHost + "/api/auth/login",
+                requestUri: "/api/auth/login",
                 content: requestContent,
                 cancellationToken: destroyCancellationToken);
 
