@@ -41,9 +41,9 @@ namespace Assets.Scripts
             };
 
             string json = JsonUtility.ToJson(new LoginRequest { email = EmailInputField.text, password = PasswordInputField.text });
-            var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
+            using var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var authResponse = await client.PostAsync(
+            using var authResponse = await client.PostAsync(
                 requestUri: ConfigurationManager.Config.AuthHost + "/api/auth/login",
                 content: requestContent,
                 cancellationToken: destroyCancellationToken);
