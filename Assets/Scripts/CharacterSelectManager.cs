@@ -48,6 +48,8 @@ namespace Assets.Scripts
                 var response = await ClientManager.LoginCharacterAsync(_selectedCharacterId.Value, destroyCancellationToken);
                 if (response.Success)
                 {
+                    State.InventoryItems = (await ClientManager.GetInventoryItems(destroyCancellationToken)).Items;
+                    State.EquippedItems = (await ClientManager.GetEquippedItems(destroyCancellationToken)).Items;
                     State.LoggedCharacter = response.SelectedCharacter;
                     SceneManager.LoadScene("GameScene");
                 }

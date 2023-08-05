@@ -1,4 +1,5 @@
 using Assets.Scripts.Client;
+using Assets.Scripts.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;

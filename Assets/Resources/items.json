@@ -1,0 +1,52 @@
+{
+    "Items": [
+        {
+            "Id": 1,
+            "Name": "Gold",
+            "IsStackable": true,
+            "ItemType": 1
+        },
+        {
+            "Id": 2,
+            "Name": "Sword",
+            "IsStackable": false,
+            "ItemType": 2
+        },
+        {
+            "Id": 3,
+            "Name": "Bow",
+            "IsStackable": false,
+            "ItemType": 3
+        },
+        {
+            "Id": 4,
+            "Name": "Head",
+            "IsStackable": false,
+            "ItemType": 4
+        },
+        {
+            "Id": 5,
+            "Name": "Chest",
+            "IsStackable": false,
+            "ItemType": 5
+        },
+        {
+            "Id": 6,
+            "Name": "Gloves",
+            "IsStackable": false,
+            "ItemType": 6
+        },
+        {
+            "Id": 7,
+            "Name": "Legs",
+            "IsStackable": false,
+            "ItemType": 7
+        },
+        {
+            "Id": 8,
+            "Name": "Boots",
+            "IsStackable": false,
+            "ItemType": 8
+        }
+    ]
+}

@@ -1,13 +1,12 @@
 ﻿using Assets.Scripts.Client.Interfaces;
+using Assets.Scripts.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
-using static Assets.Scripts.Client.PacketQueue;
 
 namespace Assets.Scripts.Client
 {
@@ -47,7 +46,7 @@ namespace Assets.Scripts.Client
 
         async void Update()
         {
-            if(_tcp.Enabled)
+            if (_tcp.Enabled)
             {
                 PacketMap packetMap = await _tcp.GetPacketMapAsync(destroyCancellationToken);
                 if (!packetMap.IsEmpty)
@@ -76,7 +75,7 @@ namespace Assets.Scripts.Client
             return _tcp.UniSendAsync(packetBuilder, token);
         }
 
-        public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token) 
+        public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token)
             where T : IPacketSerializable, new()
         {
             Packet packet = await _tcp.BiSendAsync(packetBuilder, token);
