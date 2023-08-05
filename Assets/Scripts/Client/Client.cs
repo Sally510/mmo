@@ -15,6 +15,7 @@ namespace Assets.Scripts.Client
         public static Client Instance;
 
         private TCP _tcp;
+        private bool _processPackets;
 
         void Awake()
         {
@@ -34,19 +35,9 @@ namespace Assets.Scripts.Client
             }
         }
 
-        async void Start()
-        {
-            Debug.Log("Creating new TCP instance.");
-            if (_tcp == null)
-            {
-                _tcp = new(ConfigurationManager.Config.Host, ConfigurationManager.Config.Port);
-                await _tcp.ConnectAsync(destroyCancellationToken);
-            }
-        }
-
         async void Update()
-        {
-            if (_tcp.Enabled)
+        { 
+            if (_processPackets && _tcp != null)
             {
                 PacketMap packetMap = await _tcp.GetPacketMapAsync(destroyCancellationToken);
                 if (!packetMap.IsEmpty)
@@ -58,16 +49,22 @@ namespace Assets.Scripts.Client
                 }
             }
         }
-
-        void Reset()
+        void OnEnable()
         {
-            Destroy(Instance);
-            Instance = null;
+            _tcp = new(ConfigurationManager.Config.Host, ConfigurationManager.Config.Port);
+            _processPackets = false;
+            _tcp.ConnectAsync(destroyCancellationToken);
         }
 
-        public void SetEnabled(bool enabled)
+        void OnDisable()
         {
-            _tcp.Enabled = enabled;
+            _tcp?.Dispose(); 
+            _tcp = null;
+        }
+
+        public void SetProcessPacketState(bool enabled)
+        {
+            _processPackets = enabled;
         }
 
         public Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
@@ -94,8 +91,8 @@ namespace Assets.Scripts.Client
             private readonly PacketQueue _packetQueue;
 
             private NetworkStream _stream;
-
-            public bool Enabled { get; set; }
+            private bool _dead = false;
+            public bool IsDead { get => _dead; }
 
             public TCP(string host, int port)
             {
@@ -106,12 +103,12 @@ namespace Assets.Scripts.Client
                 _packetQueue = new();
             }
 
-            public async Task ConnectAsync(CancellationToken token)
+            public async void ConnectAsync(CancellationToken token)
             {
                 await _socket.ConnectAsync(_host, _port);
                 _stream = _socket.GetStream();
 
-                while (!token.IsCancellationRequested)
+                while (!_dead && !token.IsCancellationRequested)
                 {
                     Packet packet = await ReadPacketAsync(token);
                     //Debug.Log($"new packet of type: {packet.PacketType}");
@@ -133,13 +130,21 @@ namespace Assets.Scripts.Client
 
             public async Task UniSendAsync(PacketBuilder packetBuilder, CancellationToken token)
             {
-                byte[] data = packetBuilder.Data.ToArray();
-                if (data.Length > MAX_PACKET_SIZE)
+                try
                 {
-                    throw new Exception($"Trying to send a packet thats too big. ({packetBuilder.Data.Count}) - {data[4]}");
-                }
+                    byte[] data = packetBuilder.Data.ToArray();
+                    if (data.Length > MAX_PACKET_SIZE)
+                    {
+                        throw new Exception($"Trying to send a packet thats too big. ({packetBuilder.Data.Count}) - {data[4]}");
+                    }
 
-                await _stream.WriteAsync(data, token);
+                    await _stream.WriteAsync(data, token);
+                }
+                catch (Exception ex)
+                {
+                    KillConnection(ex);
+                    throw;
+                }
             }
 
             public async Task<Packet> BiSendAsync(PacketBuilder packetBuilder, CancellationToken token)
@@ -204,6 +209,11 @@ namespace Assets.Scripts.Client
 
                     return new Packet(data, length);
                 }
+                catch(Exception ex)
+                {
+                    KillConnection(ex);
+                    throw;
+                }
                 finally
                 {
                     //return the data
@@ -213,6 +223,12 @@ namespace Assets.Scripts.Client
                     }
                 }
             }
+            private void KillConnection(Exception ex)
+            {
+                Debug.Log(ex);
+                _dead = true;
+            }
+
 
             public void Dispose()
             {
