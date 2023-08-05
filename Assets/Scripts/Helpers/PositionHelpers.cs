@@ -22,6 +22,19 @@ namespace Assets.Scripts.Helpers
             return new(x, -y);
         }
 
+        public static bool Approximately(Vector2 v1, Vector2 v2, float allowedDifference = 0.001f)
+        {
+            var dx = v1.x - v2.x;
+            if (Mathf.Abs(dx) > allowedDifference)
+                return false;
+
+            var dy = v1.y - v2.y;
+            if (Mathf.Abs(dy) > allowedDifference)
+                return false;
+
+            return true;
+        }
+
 
         public static Vector2 ToDirectionalVector(float angle)
         {

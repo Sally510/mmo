@@ -123,7 +123,11 @@ namespace Assets.Scripts.Player
         async void SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
         {
             var response = await ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
-            //TODO: handle conflicts
+            Vector3 worldPosition = response.IsoPosition.FromIsoToWorld();
+            if(PositionHelpers.Approximately((Vector2)worldPosition, packet.PredictedIsoPosition))
+            {
+                rb.MovePosition(worldPosition);
+            }
         }
 
         async void AttackEnemy(uint entityId)
