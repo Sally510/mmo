@@ -31,7 +31,25 @@ public class InventoryManager : MonoBehaviour
         
         GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
         newItem.GetComponent<InventoryItem>().itemName.text = name;
-        newItem.GetComponent<InventoryItem>().itemQuantity.text = quantity.ToString();
+        newItem.GetComponent<InventoryItem>().itemQuantity.text = FormatQuantity(quantity);
+    }
+
+    private string FormatQuantity(int quantity)
+    {
+        if (quantity >= 1000000)
+        {
+            double millions = (double)quantity / 1000000.0;
+            return millions.ToString("0.#") + "M";
+        }
+        else if (quantity >= 1000)
+        {
+            double thousands = (double)quantity / 1000.0;
+            return thousands.ToString("0.#") + "K";
+        }
+        else
+        {
+            return quantity.ToString();
+        }
     }
 
     public void Start()
