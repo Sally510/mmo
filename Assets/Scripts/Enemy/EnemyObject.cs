@@ -10,22 +10,16 @@ namespace Assets.Scripts.Enemy
     public class EnemyObject : MonoBehaviour
     {
         public MonsterModel Monster { get; private set; }
-        private Rigidbody2D _rigidBody;
-        private PlayerAnimation _animation;
-        private HealthBar _healthBar;
         private AutoMovementManager _autoMovement;
-
-        private void Start()
-        {
-            _rigidBody = GetComponent<Rigidbody2D>();
-            _animation = GetComponentInChildren<PlayerAnimation>();
-        }
+        
+        public Rigidbody2D _rigidBody;
+        public PlayerAnimation _animation;
+        public HealthBar _healthBar;
+        public Renderer _renderer;
 
         public void Initialize(MonsterModel monster)
         {
             Monster = monster;
-
-            _healthBar = GetComponentInChildren<HealthBar>();
             _healthBar.SetMaxHealth(monster.MaxHealth);
             _healthBar.SetHealth(monster.Health);
         }
@@ -60,6 +54,12 @@ namespace Assets.Scripts.Enemy
             _animation.SetDirection(Vector2.zero);
         }
 
+        public void SetVisiblity(bool visible)
+        {
+            _renderer.enabled = visible;
+            _healthBar.gameObject.SetActive(visible);
+        }
+
         void OnEnable()
         {
             PacketEventHandler.MonsterChangeEvent += PacketEventHandler_MonsterChangeEvent;
@@ -89,6 +89,8 @@ namespace Assets.Scripts.Enemy
                     Debug.Log($"Spawn: {change.EntityId}");
                     _healthBar.SetHealth(change.Health);
                     _rigidBody.MovePosition(change.Position.FromIsoToWorld());
+                    
+                    SetVisiblity(true);
                 }
                 if (change.HasFlag(ChangeState.Damaged))
                 {
@@ -98,7 +100,7 @@ namespace Assets.Scripts.Enemy
                 if (change.HasFlag(ChangeState.Died))
                 {
                     Debug.Log($"Died: {change.EntityId}");
-                    
+                    SetVisiblity(false);
                 }
                 if (change.HasFlag(ChangeState.Attack))
                 {
