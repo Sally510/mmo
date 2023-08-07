@@ -1,29 +1,28 @@
-using UnityEngine;
-using UnityEngine.UI;
-using Assets.Scripts;
-using UnityEngine.EventSystems;
-using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler ,IEndDragHandler  
+public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public Image image;
     public TMP_Text itemName;
     public TMP_Text itemQuantity;
-    [HideInInspector] public Transform parentAfterDrag;
+    [HideInInspector] public InventorySlot destinationInventorySlot;
+    [HideInInspector] public InventorySlot sourceInventorySlot;
 
     public void InitializeItem(string name, int quantity)
     {
         itemName.text = name;
         itemQuantity.text = quantity.ToString();
-
     }
 
     // Drag and drop
     public void OnBeginDrag(PointerEventData eventData)
     {
+        sourceInventorySlot = gameObject.GetComponentInParent<InventorySlot>();
+
         image.raycastTarget = false;
-        parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
     }
@@ -36,6 +35,6 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler ,IEn
     public void OnEndDrag(PointerEventData eventData)
     {
         image.raycastTarget = true;
-        transform.SetParent(parentAfterDrag);
+        transform.SetParent(destinationInventorySlot.transform);
     }
 }

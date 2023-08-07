@@ -1,6 +1,8 @@
 ﻿using Assets.Scripts.Client.Models;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace Assets.Scripts.Client
 {
@@ -45,12 +47,24 @@ namespace Assets.Scripts.Client
 
         public static Task<InventoryItemListModel> GetInventoryItems(CancellationToken token)
         {
-            return Client.Instance.BiSendAsync<InventoryItemListModel>(new PacketBuilder(PacketType.GetInventoryItems), token);
+            return Client.Instance.BiSendAsync<InventoryItemListModel>(PacketBuilder.Create(PacketType.GetInventoryItems), token);
+        }
+
+        public static async Task<bool> CommitInventoryState(List<(byte, byte)> swaps, CancellationToken token)
+        {
+            var builder = PacketBuilder.Create(PacketType.CommitInventoryState);
+            foreach (var swap in swaps)
+            {
+                builder.SetByte(swap.Item1);
+                builder.SetByte(swap.Item2);
+            }
+
+            return (await Client.Instance.BiSendAsync(builder, token)).GetBoolean();
         }
 
         public static Task<EquippedItemListModel> GetEquippedItems(CancellationToken token)
         {
-            return Client.Instance.BiSendAsync<EquippedItemListModel>(new PacketBuilder(PacketType.GetEquippedItems), token);
+            return Client.Instance.BiSendAsync<EquippedItemListModel>(PacketBuilder.Create(PacketType.GetEquippedItems), token);
         }
     }
 }

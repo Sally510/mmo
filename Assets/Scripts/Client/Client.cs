@@ -72,6 +72,11 @@ namespace Assets.Scripts.Client
             return _tcp.UniSendAsync(packetBuilder, token);
         }
 
+        public Task<Packet> BiSendAsync(PacketBuilder packetBuilder, CancellationToken token)
+        {
+            return _tcp.BiSendAsync(packetBuilder, token);
+        }
+
         public async Task<T> BiSendAsync<T>(PacketBuilder packetBuilder, CancellationToken token)
             where T : IPacketSerializable, new()
         {

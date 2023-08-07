@@ -1,34 +1,29 @@
 using Assets.Scripts;
+using Assets.Scripts.Client;
 using Assets.Scripts.Configuration;
 using Assets.Scripts.Configuration.Models;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class InventoryManager : MonoBehaviour
 {
+    private readonly Stack<(byte, byte)> _slotChanges = new();
     public InventorySlot[] inventorySlots;
     public GameObject inventoryItemPrefab;
-    
-    public void AddItem(string name, int quantity)
+
+    public void AddItem(int slot, string name, int quantity)
     {
-        // Find any empty slot
-        for (int i = 0; i < inventorySlots.Length; i++)
+        InventorySlot inventorySlot = inventorySlots[slot];
+        InventoryItem itemInSlot = inventorySlot.GetComponentInChildren<InventoryItem>();
+        if (itemInSlot == null)
         {
-            InventorySlot slot = inventorySlots[i];
-            InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
-            if (itemInSlot == null)
-            {
-                SpawnNewItem(slot, name, quantity);
-                return;
-            }
+            SpawnNewItem(inventorySlot, name, quantity);
         }
     }
 
     void SpawnNewItem(InventorySlot slot, string name, int quantity)
     {
-        
         GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
         newItem.GetComponent<InventoryItem>().itemName.text = name;
         newItem.GetComponent<InventoryItem>().itemQuantity.text = FormatQuantity(quantity);
@@ -54,11 +49,56 @@ public class InventoryManager : MonoBehaviour
 
     public void Start()
     {
-        foreach(var inventoryItem in State.InventoryItems) 
+        foreach (var inventoryItem in State.InventoryItems)
         {
-            if(ConfigurationManager.ItemMap.TryGetValue(inventoryItem.ItemId, out ItemModel item))
+            if (ConfigurationManager.ItemMap.TryGetValue(inventoryItem.ItemId, out ItemModel item))
             {
-                AddItem(item.Name,inventoryItem.Quantity);
+                AddItem(inventoryItem.Slot, item.Name, inventoryItem.Quantity);
+            }
+        }
+    }
+
+    public void AddChange(byte slot1, byte slot2)
+    {
+        //swaping with itself makes no sense
+        if(slot1 == slot2)
+        {
+            return;
+        }
+
+        //if the last added slots are the same as the current values
+        //we pop it because its negating itself
+        if (_slotChanges.TryPeek(out var change) && (change == (slot1, slot2) || change == (slot2, slot1)))
+        {
+            _slotChanges.Pop();
+        }
+
+        _slotChanges.Push((slot1, slot2));
+    }
+
+    public async void CommitChanges()
+    {
+        if (_slotChanges.Count > 0)
+        {
+            try
+            {
+                bool ok = await ClientManager.CommitInventoryState(_slotChanges.ToList(), destroyCancellationToken);
+                if (ok)
+                {
+                    Debug.Log("Successfully saved the inventory changes.");
+                }
+                else
+                {
+                    Debug.Log("Failed saving inventory changes.");
+
+                    //sync the items from the server
+                    //TODO: update the positions..
+                    State.InventoryItems = (await ClientManager.GetInventoryItems(destroyCancellationToken)).Items;
+                }
+            }
+            finally
+            {
+                _slotChanges.Clear();
             }
         }
     }
