@@ -8,6 +8,7 @@ namespace Assets.Scripts.Client
         public static event EventHandler<MonsterListModel> MonsterInfoEvent;
         public static event EventHandler<MonsterChangeListModel> MonsterChangeEvent;
         public static event EventHandler<AutoWalkModel> AutoWalkEvent;
+        public static event EventHandler<ChestDropModel> ChestDropEvent;
 
         public static void RaiseEvent(Packet[] packets)
         {
@@ -23,6 +24,9 @@ namespace Assets.Scripts.Client
                         break;
                     case PacketType.AutoWalk:
                         AutoWalkEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<AutoWalkModel>());
+                        break;
+                    case PacketType.ChestDrop:
+                        ChestDropEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<ChestDropModel>());
                         break;
                 }
             }

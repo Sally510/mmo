@@ -24,7 +24,7 @@ namespace Assets.Scripts.Client
         MonsterInfo = 14,
         MonsterChange = 15,
         Change = 16,
-        NewChestDrop = 17,     //server broadcast that an chest was dropped
+        ChestDrop = 17,     //server broadcast that an chest was dropped
         OpenChest = 18,        //client side request to open the chest
         ItemDrop = 19,         //client side request to drop item
         ChestItems = 20,       //server send to client what items are in the chest

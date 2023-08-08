@@ -18,10 +18,10 @@ namespace Assets.Scripts.Client.Models
         public void Deserialize(Packet packet)
         {
             uint entityId = packet.GetUInt();
-            long startTime = packet.GetLong();
+            DateTime startTime = packet.GetUtcDateTime();
 
             EntityId = entityId;
-            StartTime = DateTimeOffset.FromUnixTimeMilliseconds(startTime).UtcDateTime;
+            StartTime = startTime;
             WalkDuration = TimeSpan.FromMilliseconds(packet.GetLong());
             Moves = new List<Vector2>();
 
