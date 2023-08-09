@@ -12,6 +12,11 @@ public class InventoryManager : MonoBehaviour
     public InventorySlot[] inventorySlots;
     public GameObject inventoryItemPrefab;
 
+    private void PacketEventHandler_NewInventoryItemEvent(object sender, Assets.Scripts.Client.Models.InventoryItemModel e)
+    {
+        throw new System.NotImplementedException();
+    }
+
     public void AddItem(int slot, string name, int quantity)
     {
         InventorySlot inventorySlot = inventorySlots[slot];
@@ -61,7 +66,7 @@ public class InventoryManager : MonoBehaviour
     public void AddChange(byte slot1, byte slot2)
     {
         //swaping with itself makes no sense
-        if(slot1 == slot2)
+        if (slot1 == slot2)
         {
             return;
         }
@@ -101,5 +106,15 @@ public class InventoryManager : MonoBehaviour
                 _slotChanges.Clear();
             }
         }
+    }
+
+    void OnEnable()
+    {
+        PacketEventHandler.NewInventoryItemEvent += PacketEventHandler_NewInventoryItemEvent;
+    }
+
+    void OnDisable()
+    {
+        PacketEventHandler.NewInventoryItemEvent += PacketEventHandler_NewInventoryItemEvent;
     }
 }

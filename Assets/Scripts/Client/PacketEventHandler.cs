@@ -11,6 +11,7 @@ namespace Assets.Scripts.Client
         public static event EventHandler<AutoWalkModel> AutoWalkEvent;
         public static event EventHandler<ChestDropModel> ChestDropEvent;
         public static event EventHandler<ChestItemsModel> ChestItemsEvent;
+        public static event EventHandler<InventoryItemModel> NewInventoryItemEvent;
 
         public static void RaiseEvent(Packet[] packets)
         {
@@ -32,6 +33,9 @@ namespace Assets.Scripts.Client
                         break;
                     case PacketType.ChestItems:
                         ChestItemsEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<ChestItemsModel>());
+                        break;
+                    case PacketType.NewInventoryItem:
+                        NewInventoryItemEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<InventoryItemModel>());
                         break;
                 }
             }
