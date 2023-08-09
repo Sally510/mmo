@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Client.Interfaces;
+using Assets.Scripts.Client.Types;
 using System.Collections.Generic;
 
 namespace Assets.Scripts.Client.Models

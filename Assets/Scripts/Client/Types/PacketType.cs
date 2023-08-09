@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.Scripts.Client
+namespace Assets.Scripts.Client.Types
 {
     public enum PacketType : byte
     {

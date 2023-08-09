@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Client.Models;
+using Assets.Scripts.Client.Types;
 using System;
 
 namespace Assets.Scripts.Client
@@ -9,6 +10,7 @@ namespace Assets.Scripts.Client
         public static event EventHandler<MonsterChangeListModel> MonsterChangeEvent;
         public static event EventHandler<AutoWalkModel> AutoWalkEvent;
         public static event EventHandler<ChestDropModel> ChestDropEvent;
+        public static event EventHandler<ChestItemsModel> ChestItemsEvent;
 
         public static void RaiseEvent(Packet[] packets)
         {
@@ -27,6 +29,9 @@ namespace Assets.Scripts.Client
                         break;
                     case PacketType.ChestDrop:
                         ChestDropEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<ChestDropModel>());
+                        break;
+                    case PacketType.ChestItems:
+                        ChestItemsEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<ChestItemsModel>());
                         break;
                 }
             }

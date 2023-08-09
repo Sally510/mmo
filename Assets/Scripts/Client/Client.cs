@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Client.Interfaces;
+using Assets.Scripts.Client.Types;
 using Assets.Scripts.Configuration;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace Assets.Scripts.Client
         }
 
         async void Update()
-        { 
+        {
             if (_processPackets && _tcp != null)
             {
                 PacketMap packetMap = await _tcp.GetPacketMapAsync(destroyCancellationToken);
@@ -58,7 +59,7 @@ namespace Assets.Scripts.Client
 
         void OnDisable()
         {
-            _tcp?.Dispose(); 
+            _tcp?.Dispose();
             _tcp = null;
         }
 
@@ -214,7 +215,7 @@ namespace Assets.Scripts.Client
 
                     return new Packet(data, length);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     KillConnection(ex);
                     throw;

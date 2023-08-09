@@ -1,5 +1,5 @@
 ﻿using Assets.Scripts.Client.Interfaces;
-using Assets.Scripts.Client.Models;
+using Assets.Scripts.Client.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,7 +91,7 @@ namespace Assets.Scripts.Client
         }
     }
 
-    public static class PacketExtensions 
+    public static class PacketExtensions
     {
         public static IEnumerable<T> ToSerializedPackets<T>(this IEnumerable<Packet> packets)
                 where T : IPacketSerializable, new()

@@ -1,8 +1,8 @@
 ﻿using Assets.Scripts.Client.Models;
+using Assets.Scripts.Client.Types;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace Assets.Scripts.Client
 {
@@ -65,6 +65,12 @@ namespace Assets.Scripts.Client
         public static Task<EquippedItemListModel> GetEquippedItems(CancellationToken token)
         {
             return Client.Instance.BiSendAsync<EquippedItemListModel>(PacketBuilder.Create(PacketType.GetEquippedItems), token);
+        }
+
+        public static async Task<PickupStatusType> PickupItem(long droppedItemId, CancellationToken token)
+        {
+            Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.PickupItem).SetLong(droppedItemId), token);
+            return (PickupStatusType)packet.GetByte();
         }
     }
 }

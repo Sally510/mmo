@@ -1,8 +1,6 @@
-﻿using Assets.Scripts.Client.Models;
+﻿using Assets.Scripts.Client.Types;
 using System;
 using System.Collections.Generic;
-using Unity.Profiling;
-using UnityEngine.Serialization;
 
 namespace Assets.Scripts.Configuration.Models
 {

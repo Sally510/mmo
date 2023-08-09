@@ -1,4 +1,4 @@
-﻿namespace Assets.Scripts.Client.Models
+﻿namespace Assets.Scripts.Client.Types
 {
     public enum ItemType
     {
