@@ -342,19 +342,11 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 52590305}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1456848748}
-        m_TargetAssemblyTypeName: Assets.Scripts.LoginManager, Assembly-CSharp
-        m_MethodName: OnCreateAccount
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: [{m_Target: {fileID: 1456848748}, m_TargetAssemblyTypeName: 'Assets.Scripts.LoginManager,
+            Assembly-CSharp', m_MethodName: OnCreateAccount, m_Mode: 1, m_Arguments: {
+            m_ObjectArgument: {fileID: 0}, m_ObjectArgumentAssemblyTypeName: 'UnityEngine.Object,
+              UnityEngine', m_IntArgument: 0, m_FloatArgument: 0, m_StringArgument: '',
+            m_BoolArgument: 0}, m_CallState: 2}]
 --- !u!114 &52590305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1747,7 +1739,8 @@ MonoBehaviour:
   m_text: Create account
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
-  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
+  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2006,7 +1999,8 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
-  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
+  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2337,7 +2331,8 @@ MonoBehaviour:
   m_text: Login
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
-  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c, type: 2}
+  m_sharedMaterial: {fileID: -3546499992745403617, guid: 79c5eef1b2154064a81dea32804aea7c,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
