@@ -11,9 +11,9 @@ public class HealthBar : MonoBehaviour
         _canvas = GetComponent<Canvas>();    
     }
 
-    public void SetVisiblity(bool visiblity)
+    public void SetVisibility(bool visibility)
     {
-        _canvas.enabled = visiblity;
+        _canvas.enabled = visibility;
     }
 
     public void SetMaxHealth(int health)

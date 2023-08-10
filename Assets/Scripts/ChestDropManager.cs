@@ -2,16 +2,31 @@
 using Assets.Scripts.Client.Models;
 using Assets.Scripts.Helpers;
 using System.Collections;
+using System.Threading;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
     public class ChestDropManager : MonoBehaviour
     {
+        private Canvas _canvas;
+        [SerializeField]
+        private GameObject chestPrefab;
+
+        void Start()
+        {
+            _canvas = GetComponent<Canvas>();
+        }
+
+        public void SetVisibility(bool visibility)
+        {
+            _canvas.enabled = visibility;
+        }
+
         private void PacketEventHandler_ChestDropEvent(object sender, ChestDropModel e)
         {
             Vector3 worldPosition = e.IsoPosition.FromIsoToWorld();
-
+            GameObject newChest = Instantiate(chestPrefab, worldPosition, Quaternion.identity);
             Debug.Log("New chest drop");
         }
 

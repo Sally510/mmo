@@ -54,7 +54,7 @@ namespace Assets.Scripts.Enemy
             _animation.SetDirection(Vector2.zero);
         }
 
-        public void SetVisiblity(bool visible)
+        public void SetVisibility(bool visible)
         {
             _renderer.enabled = visible;
             _healthBar.gameObject.SetActive(visible);
@@ -90,7 +90,7 @@ namespace Assets.Scripts.Enemy
                     _healthBar.SetHealth(change.Health);
                     _rigidBody.MovePosition(change.Position.FromIsoToWorld());
                     
-                    SetVisiblity(true);
+                    SetVisibility(true);
                 }
                 if (change.HasFlag(ChangeState.Damaged))
                 {
@@ -100,7 +100,7 @@ namespace Assets.Scripts.Enemy
                 if (change.HasFlag(ChangeState.Died))
                 {
                     Debug.Log($"Died: {change.EntityId}");
-                    SetVisiblity(false);
+                    SetVisibility(false);
                 }
                 if (change.HasFlag(ChangeState.Attack))
                 {

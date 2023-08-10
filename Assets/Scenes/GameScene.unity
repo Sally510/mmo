@@ -9411,6 +9411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4962bb5d722f9f4ab21a5d57682e6a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chestPrefab: {fileID: 1889140705350417819, guid: 99b4eaacd18008c42b0a62c542e2fc6b, type: 3}
 --- !u!4 &2145538911
 Transform:
   m_ObjectHideFlags: 0
