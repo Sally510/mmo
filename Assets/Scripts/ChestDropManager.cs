@@ -9,19 +9,8 @@ namespace Assets.Scripts
 {
     public class ChestDropManager : MonoBehaviour
     {
-        private Canvas _canvas;
         [SerializeField]
         private GameObject chestPrefab;
-
-        void Start()
-        {
-            _canvas = GetComponent<Canvas>();
-        }
-
-        public void SetVisibility(bool visibility)
-        {
-            _canvas.enabled = visibility;
-        }
 
         private void PacketEventHandler_ChestDropEvent(object sender, ChestDropModel e)
         {

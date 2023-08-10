@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "807230336478",
+    "project_id": "mmogame-7cb6e",
+    "storage_bucket": "mmogame-7cb6e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807230336478:android:6fa86bd21999c95ae1c14f",
+        "android_client_info": {
+          "package_name": "com.DefaultCompany.com.unity.template.mobile2D"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "807230336478-25o3kinilf7gjit21mlp9ejqmo23u1us.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDw56G9uB7ORRiTNHZd8nVBU8WPHYmSjZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "807230336478-25o3kinilf7gjit21mlp9ejqmo23u1us.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "807230336478-gq8t05rub9ul5rlsedu4h3haq2fbs0u1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.DefaultCompany.com.unity.template.mobile2D"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

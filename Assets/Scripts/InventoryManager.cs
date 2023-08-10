@@ -87,7 +87,7 @@ public class InventoryManager : MonoBehaviour
         {
             try
             {
-                bool ok = await ClientManager.CommitInventoryState(_slotChanges.ToList(), destroyCancellationToken);
+                bool ok = await ClientManager.CommitInventoryStateAsync(_slotChanges.ToList(), destroyCancellationToken);
                 if (ok)
                 {
                     Debug.Log("Successfully saved the inventory changes.");
@@ -98,7 +98,7 @@ public class InventoryManager : MonoBehaviour
 
                     //sync the items from the server
                     //TODO: update the positions..
-                    State.InventoryItems = (await ClientManager.GetInventoryItems(destroyCancellationToken)).Items;
+                    State.InventoryItems = (await ClientManager.GetInventoryItemsAsync(destroyCancellationToken)).Items;
                 }
             }
             finally

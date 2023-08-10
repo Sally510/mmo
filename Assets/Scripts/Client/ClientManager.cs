@@ -45,12 +45,12 @@ namespace Assets.Scripts.Client
                 .SetFloat(elapsedSeconds), token);
         }
 
-        public static Task<InventoryItemListModel> GetInventoryItems(CancellationToken token)
+        public static Task<InventoryItemListModel> GetInventoryItemsAsync(CancellationToken token)
         {
             return Client.Instance.BiSendAsync<InventoryItemListModel>(PacketBuilder.Create(PacketType.GetInventoryItems), token);
         }
 
-        public static async Task<bool> CommitInventoryState(List<(byte, byte)> swaps, CancellationToken token)
+        public static async Task<bool> CommitInventoryStateAsync(List<(byte, byte)> swaps, CancellationToken token)
         {
             var builder = PacketBuilder.Create(PacketType.CommitInventoryState);
             foreach (var swap in swaps)
@@ -62,12 +62,17 @@ namespace Assets.Scripts.Client
             return (await Client.Instance.BiSendAsync(builder, token)).GetBoolean();
         }
 
-        public static Task<EquippedItemListModel> GetEquippedItems(CancellationToken token)
+        public static Task<EquippedItemListModel> GetEquippedItemsAsync(CancellationToken token)
         {
             return Client.Instance.BiSendAsync<EquippedItemListModel>(PacketBuilder.Create(PacketType.GetEquippedItems), token);
         }
 
-        public static async Task<PickupStatusType> PickupItem(long droppedItemId, CancellationToken token)
+        public static Task OpenChestAsync(long droppedChestId, CancellationToken token)
+        {
+            return Client.Instance.UniSendAsync(PacketBuilder.Create(PacketType.OpenChest).SetLong(droppedChestId), token);
+        }
+
+        public static async Task<PickupStatusType> PickupItemAsync(long droppedItemId, CancellationToken token)
         {
             Packet packet = await Client.Instance.BiSendAsync(PacketBuilder.Create(PacketType.PickupItem).SetLong(droppedItemId), token);
             return (PickupStatusType)packet.GetByte();

@@ -81,6 +81,11 @@ namespace Assets.Scripts
             }
         }
 
+        public void OnCreateAccount()
+        {
+            SceneManager.LoadScene("CreateAccountScene");
+        }
+
         [Serializable]
         class LoginRequest
         {

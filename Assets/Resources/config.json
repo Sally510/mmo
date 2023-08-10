@@ -1,7 +1,7 @@
 ﻿{
-  "Host": "89.142.170.95",
+  "Host": "localhost",
   "Port": 13551,
-  "AuthHost": "http://89.142.170.95",
+  "AuthHost": "http://192.168.1.25",
   "DefaultLogin": {
     "Username": "test@test.si",
     "Password": "fduler123"
