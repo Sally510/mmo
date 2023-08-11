@@ -88,7 +88,14 @@ namespace Assets.Scripts
                         break;
                 }
             }
-            catch(Exception ex)
+            catch (AggregateException aggEx)
+            {
+                foreach (var e in aggEx.Flatten().InnerExceptions)
+                {
+                    Debug.LogException(e);
+                }
+            }
+            catch (Exception ex)
             {
                 Debug.LogException(ex);
             }
