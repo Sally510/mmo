@@ -3427,8 +3427,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1456848748}
-        m_TargetAssemblyTypeName: NetworkingManager, Assembly-CSharp
-        m_MethodName: OnLoginClick
+        m_TargetAssemblyTypeName: Assets.Scripts.LoginManager, Assembly-CSharp
+        m_MethodName: OnLoggedInClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
