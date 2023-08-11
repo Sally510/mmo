@@ -92,7 +92,13 @@ namespace Assets.Scripts
             {
                 foreach (var e in aggEx.Flatten().InnerExceptions)
                 {
-                    Debug.LogException(e);
+                    if(e is FirebaseException fEx)
+                    {
+                        Debug.LogException(fEx);
+                    } else
+                    {
+                        Debug.LogException(e);
+                    }
                 }
             }
             catch (Exception ex)
