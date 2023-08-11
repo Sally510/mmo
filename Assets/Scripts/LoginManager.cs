@@ -1,10 +1,13 @@
 using Assets.Scripts.Client;
 using Assets.Scripts.Configuration;
+using Firebase;
+using Firebase.Auth;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Assets.Scripts.Client.Models.LoginModel;
@@ -13,9 +16,69 @@ namespace Assets.Scripts
 {
     public class LoginManager : MonoBehaviour
     {
+        private FirebaseAuth auth;
+        private FirebaseUser user;
+
         public TMP_InputField EmailInputField;
         public TMP_InputField PasswordInputField;
         public TMP_Text ErrorLabel;
+
+        async void Awake()
+        {
+            var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
+            if (dependencyStatus == DependencyStatus.Available)
+            {
+                Debug.Log("Setting up Firebase Auth");
+                InitializeFirebase();
+            }
+            else
+            {
+                Debug.LogError($"Could not resolve all Firebase depenencies: {dependencyStatus}");
+            }
+        }
+
+        async void InitializeFirebase()
+        {
+            auth = FirebaseAuth.DefaultInstance;
+            bool loginSuccess = false;
+            if (auth.CurrentUser != null && auth.CurrentUser.IsValid())
+            {
+                string token = await auth.CurrentUser.TokenAsync(false);
+                var loginModel = await ClientManager.LoginAsync(token, destroyCancellationToken);
+                switch (loginModel.Status)
+                {
+                    case StatusType.Success:
+                        State.CharacterOptions = loginModel.CharacterList;
+                        SceneManager.LoadScene("CharacterSelectScene");
+                        loginSuccess = true;
+                        break;
+                    case StatusType.AlreadyLoggedIn:
+                        ErrorLabel.text = "User already logged in.";
+                        break;
+                    case StatusType.BadToken:
+                        ErrorLabel.text = "Invalid information.";
+                        break;
+                    default:
+                        break;
+                }
+               
+            }
+            //SceneManager.LoadScene("CharacterSelectScene");
+
+            //if(loginSuccess)
+            //{
+            //    UserButton.gameObject.SetActive(true);
+            //    UserButton.GetComponentInChildren<TMP_Text>().text = auth.CurrentUser.UserId[..7] + "...";
+            //    SignInButton.gameObject.SetActive(false);
+            //}
+            //else
+            //{
+            //    UserButton.gameObject.SetActive(false);
+            //    SignInButton.gameObject.SetActive(true);
+            //}
+            //auth.StateChanged += AuthStateChanged;
+            //AuthStateChanged(this, null);
+        }
 
         private void Start()
         {
@@ -35,50 +98,7 @@ namespace Assets.Scripts
         {
             ErrorLabel.text = string.Empty;
 
-            using HttpClient client = new(new HttpClientHandler
-            {
-                Proxy = System.Net.WebRequest.DefaultWebProxy
-            })
-            {
-                BaseAddress = new Uri(ConfigurationManager.Config.AuthHost)
-            };
-
-            string json = JsonUtility.ToJson(new LoginRequest { email = EmailInputField.text, password = PasswordInputField.text });
-            using StringContent requestContent = new(json, Encoding.UTF8, "application/json");
-
-            using var authResponse = await client.PostAsync(
-                requestUri: "/api/auth/login",
-                content: requestContent,
-                cancellationToken: destroyCancellationToken);
-
-
-            if (!authResponse.IsSuccessStatusCode)
-            {
-                ErrorLabel.text = "Server error";
-                return;
-            }
-
-            LoginResponse response = JsonUtility.FromJson<LoginResponse>(await authResponse.Content.ReadAsStringAsync());
-
-            if (response.ok)
-            {
-                var loginModel = await ClientManager.LoginAsync(response.payload.accessToken, destroyCancellationToken);
-                switch (loginModel.Status)
-                {
-                    case StatusType.Success:
-                        State.CharacterOptions = loginModel.CharacterList;
-                        SceneManager.LoadScene("CharacterSelectScene");
-                        break;
-                    case StatusType.AlreadyLoggedIn:
-                        ErrorLabel.text = "User already logged in.";
-                        break;
-                    case StatusType.InvalidInformation:
-                        ErrorLabel.text = "Invalid information.";
-                        break;
-                    default:
-                        break;
-                }
-            }
+            
         }
 
         public void OnCreateAccount()

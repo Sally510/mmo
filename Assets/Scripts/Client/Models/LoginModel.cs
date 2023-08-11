@@ -25,7 +25,7 @@ namespace Assets.Scripts.Client.Models
         {
             Success = 1,
             AlreadyLoggedIn = 2,
-            InvalidInformation = 3,
+            BadToken = 3,
         }
     }
 }
