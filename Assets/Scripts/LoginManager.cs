@@ -3,28 +3,46 @@ using Assets.Scripts.Configuration;
 using Firebase;
 using Firebase.Auth;
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.Collections.Specialized;
 using System.Text;
+using System.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using static Assets.Scripts.Client.Models.LoginModel;
 
 namespace Assets.Scripts
 {
     public class LoginManager : MonoBehaviour
     {
+        [Header("Login Settings")]
+        public GameObject loginPanel;
+        public TMP_InputField emailInputField;
+        public TMP_InputField passwordInputField;
+        public TMP_Text loginErrorLabel;
+
+        [Header("Logged-In Settings")]
+        public GameObject loggedInPanel;
+        public Button characterButton;
+        public TMP_Text loggedInErrorLabel;
+
         private FirebaseAuth auth;
         private FirebaseUser user;
 
-        public TMP_InputField EmailInputField;
-        public TMP_InputField PasswordInputField;
-        public TMP_Text ErrorLabel;
+        
 
         async void Awake()
         {
+            ConfigurationManager.Clear();
+            State.Clear();
+
+            if (ConfigurationManager.Config.DefaultLogin != null)
+            {
+                emailInputField.text = ConfigurationManager.Config.DefaultLogin.Username;
+                passwordInputField.text = ConfigurationManager.Config.DefaultLogin.Password;
+            }
+
             var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
             if (dependencyStatus == DependencyStatus.Available)
             {
@@ -37,97 +55,117 @@ namespace Assets.Scripts
             }
         }
 
-        async void InitializeFirebase()
+        void InitializeFirebase()
         {
             auth = FirebaseAuth.DefaultInstance;
-            bool loginSuccess = false;
             if (auth.CurrentUser != null && auth.CurrentUser.IsValid())
             {
-                string token = await auth.CurrentUser.TokenAsync(false);
-                var loginModel = await ClientManager.LoginAsync(token, destroyCancellationToken);
-                switch (loginModel.Status)
-                {
-                    case StatusType.Success:
-                        State.CharacterOptions = loginModel.CharacterList;
-                        SceneManager.LoadScene("CharacterSelectScene");
-                        loginSuccess = true;
-                        break;
-                    case StatusType.AlreadyLoggedIn:
-                        ErrorLabel.text = "User already logged in.";
-                        break;
-                    case StatusType.BadToken:
-                        ErrorLabel.text = "Invalid information.";
-                        break;
-                    default:
-                        break;
-                }
-               
+                LoadLoggedInPanel(auth.CurrentUser.Email);
+            } else
+            {
+                LoadLogInPanel();
             }
-            //SceneManager.LoadScene("CharacterSelectScene");
 
-            //if(loginSuccess)
-            //{
-            //    UserButton.gameObject.SetActive(true);
-            //    UserButton.GetComponentInChildren<TMP_Text>().text = auth.CurrentUser.UserId[..7] + "...";
-            //    SignInButton.gameObject.SetActive(false);
-            //}
-            //else
-            //{
-            //    UserButton.gameObject.SetActive(false);
-            //    SignInButton.gameObject.SetActive(true);
-            //}
             //auth.StateChanged += AuthStateChanged;
             //AuthStateChanged(this, null);
         }
 
-        private void Start()
+        void LoadLogInPanel()
         {
-            ConfigurationManager.Clear();
-            State.Clear();
+            loginErrorLabel.text = string.Empty;
+            loginPanel.SetActive(true);
+            loggedInPanel.SetActive(false);
+        }
 
-            if (ConfigurationManager.Config.DefaultLogin != null)
+        void LoadLoggedInPanel(string name)
+        {
+            loggedInErrorLabel.text = string.Empty;
+            loginPanel.SetActive(false);
+            loggedInPanel.SetActive(true);
+            characterButton.GetComponentInChildren<TMP_Text>().text = name;
+        }
+
+        public async void OnLoggedInClick()
+        {
+            loggedInErrorLabel.text = await LogIn();
+        }
+
+        public void OnLogoutClick()
+        {
+            FirebaseAuth.DefaultInstance.SignOut();
+            LoadLogInPanel();
+        }
+
+        private async Task<string> LogIn()
+        {
+            string token = await auth.CurrentUser.TokenAsync(false);
+            var loginModel = await ClientManager.LoginAsync(token, destroyCancellationToken);
+            switch (loginModel.Status)
             {
-                EmailInputField.text = ConfigurationManager.Config.DefaultLogin.Username;
-                PasswordInputField.text = ConfigurationManager.Config.DefaultLogin.Password;
+                case StatusType.Success:
+                    State.CharacterOptions = loginModel.CharacterList;
+                    SceneManager.LoadScene("CharacterSelectScene");
+                    return null;
+                case StatusType.AlreadyLoggedIn:
+                    return "User already logged in.";
+                case StatusType.BadToken:
+                    return "Invalid information.";
             }
-
-            ErrorLabel.text = string.Empty;
+            return "Unknown error";
         }
 
         public async void OnLoginClick()
         {
-            ErrorLabel.text = string.Empty;
+            loginErrorLabel.text = string.Empty;
 
-            
+            try
+            {
+                AuthResult result = await FirebaseAuth.DefaultInstance.SignInWithEmailAndPasswordAsync(emailInputField.text, passwordInputField.text);
+                loginErrorLabel.text = await LogIn();
+            }
+            catch (FirebaseException firebaseEx)
+            {
+                Debug.LogException(firebaseEx);
+
+                switch ((AuthError)firebaseEx.ErrorCode)
+                {
+                    case AuthError.MissingEmail:
+                        loginErrorLabel.text = "Missing email";
+                        break;
+                    case AuthError.MissingPassword:
+                        loginErrorLabel.text = "Missing password";
+                        break;
+                    case AuthError.WeakPassword:
+                        loginErrorLabel.text = "Weak password";
+                        break;
+                    case AuthError.EmailAlreadyInUse:
+                        loginErrorLabel.text = "Email already in use";
+                        break;
+                }
+            }
+            catch (AggregateException aggEx)
+            {
+                foreach (var e in aggEx.Flatten().InnerExceptions)
+                {
+                    if (e is FirebaseException fEx)
+                    {
+                        Debug.LogException(fEx);
+                    }
+                    else
+                    {
+                        Debug.LogException(e);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
 
         public void OnCreateAccount()
         {
             SceneManager.LoadScene("CreateAccountScene");
-        }
-
-        [Serializable]
-        class LoginRequest
-        {
-            public string email;
-            public string password;
-        }
-
-        [Serializable]
-        class LoginResponse
-        {
-            public bool ok;
-            public PayloadModel payload;
-            public List<string> errors;
-
-            [Serializable]
-            public class PayloadModel
-            {
-                public string accessToken;
-                public int accessExpiry;
-                public string refreshToken;
-                public int refreshExpiry;
-            }
         }
     }
 }

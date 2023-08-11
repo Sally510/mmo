@@ -1,8 +1,6 @@
-﻿using Assets.Scripts.Client;
-using Firebase;
+﻿using Firebase;
 using Firebase.Auth;
 using System;
-using System.Collections;
 using System.Net.Mail;
 using TMPro;
 using UnityEngine;
@@ -32,11 +30,10 @@ namespace Assets.Scripts
 
         public async void OnCreate()
         {
-            
             errorLabel.text = string.Empty;
 
             string email = emailField.text;
-            if(!IsEmailValid(email))
+            if (!IsEmailValid(email))
             {
                 errorLabel.text = "Enter a valid email address";
                 return;
@@ -50,13 +47,13 @@ namespace Assets.Scripts
                 return;
             }
 
-            if(password != confirmPassword)
+            if (password != confirmPassword)
             {
                 errorLabel.text = "Passwords do not match";
                 return;
             }
 
-            if(password.Length < 8)
+            if (password.Length < 8)
             {
                 errorLabel.text = "Password has to be atleast 8 characters long";
                 return;
@@ -67,8 +64,8 @@ namespace Assets.Scripts
                 AuthResult result = await FirebaseAuth.DefaultInstance.CreateUserWithEmailAndPasswordAsync(email, password);
                 Debug.Log($"New user created with email {result.User.Email} and id {result.User.UserId}");
                 SceneManager.LoadScene("LoginScene");
-            } 
-            catch(FirebaseException firebaseEx)
+            }
+            catch (FirebaseException firebaseEx)
             {
                 Debug.LogException(firebaseEx);
 
@@ -92,10 +89,11 @@ namespace Assets.Scripts
             {
                 foreach (var e in aggEx.Flatten().InnerExceptions)
                 {
-                    if(e is FirebaseException fEx)
+                    if (e is FirebaseException fEx)
                     {
                         Debug.LogException(fEx);
-                    } else
+                    }
+                    else
                     {
                         Debug.LogException(e);
                     }
