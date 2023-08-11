@@ -8,6 +8,7 @@ namespace Assets.Scripts.Configuration.Models
         public string Host;
         public int Port;
         public string AuthHost;
+        public string LoginToken;
         public DefaultLoginModel DefaultLogin;
 
 

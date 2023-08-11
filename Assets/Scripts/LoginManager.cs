@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -55,8 +56,14 @@ namespace Assets.Scripts
             }
         }
 
-        void InitializeFirebase()
+       void InitializeFirebase()
         {
+            if (!string.IsNullOrEmpty(ConfigurationManager.Config.LoginToken))
+            {
+                LoadLoggedInPanel("Hacked user");
+                return;
+            }
+
             auth = FirebaseAuth.DefaultInstance;
             if (auth.CurrentUser != null && auth.CurrentUser.IsValid())
             {
@@ -98,7 +105,10 @@ namespace Assets.Scripts
 
         private async Task<string> LogIn()
         {
-            string token = await auth.CurrentUser.TokenAsync(false);
+            string token = !string.IsNullOrEmpty(ConfigurationManager.Config.LoginToken) 
+                ? ConfigurationManager.Config.LoginToken
+                : await auth.CurrentUser.TokenAsync(false);
+
             var loginModel = await ClientManager.LoginAsync(token, destroyCancellationToken);
             switch (loginModel.Status)
             {
