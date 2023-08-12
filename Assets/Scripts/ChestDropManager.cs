@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Client;
 using Assets.Scripts.Client.Models;
+using Assets.Scripts.Client.Types;
 using Assets.Scripts.Configuration;
 using Assets.Scripts.Helpers;
 using System.Collections;
@@ -50,18 +51,26 @@ namespace Assets.Scripts
                 InventorySlot slot = chestSlots[i++];
                 if(ConfigurationManager.ItemMap.TryGetValue(item.ItemId, out var itemModel))
                 {
-                    SpawnNewItem(slot, itemModel.Name, item.Quantity);
+                    InventoryItem inventoryItem = InventoryItem.InstantiateNewItem(inventoryItemPrefab, slot, itemModel.Name, item.Quantity, item.DroppedItemId);
+
+                    inventoryItem.OnClick += InventoryItem_OnClick;
                 }
             }
 
             treasureChest.SetActive(true);
         }
 
-        void SpawnNewItem(InventorySlot slot, string name, int quantity)
+        private async void InventoryItem_OnClick(object sender, UnityEngine.EventSystems.PointerEventData e)
         {
-            GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
-            newItem.GetComponent<InventoryItem>().itemName.text = name;
-            newItem.GetComponent<InventoryItem>().itemQuantity.text = InventoryManager.FormatQuantity(quantity);
+            if(sender is InventoryItem inventoryItem && inventoryItem.Data is long droppedItemid)
+            {
+                PickupStatusType status = await ClientManager.PickupItemAsync(droppedItemid, destroyCancellationToken);
+                Debug.Log(status);
+                if(status == PickupStatusType.Ok)
+                {
+                    Destroy(inventoryItem.gameObject);
+                }
+            }
         }
 
         void OnEnable()

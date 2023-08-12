@@ -1,20 +1,27 @@
+using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventoryItem : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    public object Data { get; private set; }
+
     public Image image;
     public TMP_Text itemName;
     public TMP_Text itemQuantity;
     [HideInInspector] public InventorySlot destinationInventorySlot;
     [HideInInspector] public InventorySlot sourceInventorySlot;
 
-    public void InitializeItem(string name, int quantity)
+    public event EventHandler<PointerEventData> OnClick;
+
+    public void InitializeItem(string name, int quantity, object data = null)
     {
         itemName.text = name;
-        itemQuantity.text = quantity.ToString();
+        itemQuantity.text = InventoryManager.FormatQuantity(quantity);
+        Data = data;
     }
 
     // Drag and drop
@@ -36,5 +43,18 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         image.raycastTarget = true;
         transform.SetParent(destinationInventorySlot.transform);
+    }
+
+    public static InventoryItem InstantiateNewItem(GameObject inventoryItemPrefab, InventorySlot slot, string name, int quantity, object data = null)
+    {
+        GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
+        InventoryItem inventoryItem = newItem.GetComponent<InventoryItem>();
+        inventoryItem.InitializeItem(name, quantity, data);
+        return inventoryItem;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnClick?.Invoke(this, eventData);
     }
 }

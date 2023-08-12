@@ -5,6 +5,7 @@ using Assets.Scripts.Configuration.Models;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -23,15 +24,8 @@ public class InventoryManager : MonoBehaviour
         InventoryItem itemInSlot = inventorySlot.GetComponentInChildren<InventoryItem>();
         if (itemInSlot == null)
         {
-            SpawnNewItem(inventorySlot, name, quantity);
+            InventoryItem.InstantiateNewItem(inventoryItemPrefab, inventorySlot, name, quantity);
         }
-    }
-
-    void SpawnNewItem(InventorySlot slot, string name, int quantity)
-    {
-        GameObject newItem = Instantiate(inventoryItemPrefab, slot.transform);
-        newItem.GetComponent<InventoryItem>().itemName.text = name;
-        newItem.GetComponent<InventoryItem>().itemQuantity.text = FormatQuantity(quantity);
     }
 
     //TODO: add this to a helper class
