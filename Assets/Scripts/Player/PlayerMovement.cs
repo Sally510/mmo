@@ -21,10 +21,10 @@ namespace Assets.Scripts.Player
             rb = GetComponent<Rigidbody2D>();
             anim = GetComponentInChildren<PlayerAnimation>();
 
-            if (State.LoggedCharacter != null)
+            if (State.LoggedCharacter.character != null)
             {
-                Vector2 startPosition = PositionHelpers.IsoToWorld(State.LoggedCharacter.IsoPosition);
-                Debug.Log($"Spawning character at: {State.LoggedCharacter.IsoPosition}");
+                Vector2 startPosition = PositionHelpers.IsoToWorld(State.LoggedCharacter.character.IsoPosition);
+                Debug.Log($"Spawning character at: {State.LoggedCharacter.character.IsoPosition}");
                 rb.position = startPosition;
             }
         }
@@ -113,7 +113,7 @@ namespace Assets.Scripts.Player
 
         private void PacketEventHandler_AutoWalkEvent(object sender, Client.Models.AutoWalkModel e)
         {
-            if(e.EntityId == State.LoggedCharacter.EntityId)
+            if(e.EntityId == State.LoggedCharacter.character.EntityId)
             {
                 AutoMovement = new AutoMovementManager(e.StartTime, e.WalkDuration, e.Moves);
                 ThrottleMovementHandler.Restart();

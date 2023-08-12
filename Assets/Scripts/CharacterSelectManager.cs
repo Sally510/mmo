@@ -3,6 +3,7 @@ using Assets.Scripts.Client.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -50,7 +51,7 @@ namespace Assets.Scripts
                 {
                     State.InventoryItems = (await ClientManager.GetInventoryItemsAsync(destroyCancellationToken)).Items;
                     State.EquippedItems = (await ClientManager.GetEquippedItemsAsync(destroyCancellationToken)).Items;
-                    State.LoggedCharacter = response.SelectedCharacter;
+                    State.LoggedCharacter = (response.SelectedCharacter, State.CharacterOptions.First(x => x.Id == _selectedCharacterId.Value));
                     SceneManager.LoadScene("GameScene");
                 }
             }
