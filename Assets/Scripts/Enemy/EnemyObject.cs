@@ -14,14 +14,14 @@ namespace Assets.Scripts.Enemy
         
         public Rigidbody2D _rigidBody;
         public PlayerAnimation _animation;
-        public HealthBar _healthBar;
+        public ProgressBar _healthBar;
         public Renderer _renderer;
 
         public void Initialize(MonsterModel monster)
         {
             Monster = monster;
-            _healthBar.SetMaxHealth(monster.MaxHealth);
-            _healthBar.SetHealth(monster.Health);
+            _healthBar.SetMaxValue(monster.MaxHealth);
+            _healthBar.SetValue(monster.Health);
         }
 
         void FixedUpdate()
@@ -87,7 +87,7 @@ namespace Assets.Scripts.Enemy
                 if (change.HasFlag(ChangeState.Spawn))
                 {
                     Debug.Log($"Spawn: {change.EntityId}");
-                    _healthBar.SetHealth(change.Health);
+                    _healthBar.SetValue(change.Health);
                     _rigidBody.MovePosition(change.Position.FromIsoToWorld());
                     
                     SetVisibility(true);
@@ -95,7 +95,7 @@ namespace Assets.Scripts.Enemy
                 if (change.HasFlag(ChangeState.Damaged))
                 {
                     Debug.Log($"Damaged: {change.EntityId}");
-                    _healthBar.SetHealth(change.Health);
+                    _healthBar.SetValue(change.Health);
                 }
                 if (change.HasFlag(ChangeState.Died))
                 {

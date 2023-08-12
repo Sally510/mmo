@@ -334,7 +334,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rigidBody: {fileID: 4673674440164582185}
   _animation: {fileID: 8385590412450900819}
-  _healthBar: {fileID: 5951632395024579062}
+  _healthBar: {fileID: 4590036169317682070}
   _renderer: {fileID: 6044487733644474001}
 --- !u!1001 &1033751585622556328
 PrefabInstance:
@@ -348,6 +348,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HealthBar
       objectReference: {fileID: 0}
+    - target: {fileID: 3597120480347649342, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
+      propertyPath: slider
+      value: 
+      objectReference: {fileID: 9024161909772977851}
     - target: {fileID: 4791497459811378212, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -453,14 +457,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
---- !u!224 &5487159072479845004 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4791497459811378212, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
-  m_PrefabInstance: {fileID: 1033751585622556328}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5951632395024579062 stripped
+--- !u!114 &4590036169317682070 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6683603214503429982, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
+  m_CorrespondingSourceObject: {fileID: 3597120480347649342, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
   m_PrefabInstance: {fileID: 1033751585622556328}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
@@ -469,6 +468,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce5d03df8fb72384fa7f0f8b979b505a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &5487159072479845004 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4791497459811378212, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
+  m_PrefabInstance: {fileID: 1033751585622556328}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &9024161909772977851 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8315013696403699731, guid: a0bde487b2fb79f4892e366d7dc5209e, type: 3}
