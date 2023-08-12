@@ -34,7 +34,8 @@ public class InventoryManager : MonoBehaviour
         newItem.GetComponent<InventoryItem>().itemQuantity.text = FormatQuantity(quantity);
     }
 
-    private string FormatQuantity(int quantity)
+    //TODO: add this to a helper class
+    public static string FormatQuantity(int quantity)
     {
         if (quantity >= 1000000)
         {
