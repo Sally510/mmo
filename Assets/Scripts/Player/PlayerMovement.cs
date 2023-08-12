@@ -120,6 +120,19 @@ namespace Assets.Scripts.Player
             }
         }
 
+        private void PacketEventHandler_ExperienceChangeEvent(object sender, uint e)
+        {
+            if (State.LoggedCharacter.character != null)
+            {
+                State.LoggedCharacter.character.Experience = e;
+            }
+
+            if (State.LoggedCharacter.option != null)
+            {
+                State.LoggedCharacter.option.Experience = e;
+            }
+        }
+
         async void SendMovePacket(ThrottleMovementHandler.MovementPacket packet)
         {
             var response = await ClientManager.SendMovePacketAsync(packet.Angle, packet.ElapsedSeconds, destroyCancellationToken);
@@ -139,11 +152,15 @@ namespace Assets.Scripts.Player
         private void OnEnable()
         {
             PacketEventHandler.AutoWalkEvent += PacketEventHandler_AutoWalkEvent;
+            PacketEventHandler.ExperienceChangeEvent += PacketEventHandler_ExperienceChangeEvent;
         }
+
+        
 
         private void OnDisable()
         {
             PacketEventHandler.AutoWalkEvent -= PacketEventHandler_AutoWalkEvent;
+            PacketEventHandler.ExperienceChangeEvent -= PacketEventHandler_ExperienceChangeEvent;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Assets.Scripts.Client
         public static event EventHandler<ChestDropModel> ChestDropEvent;
         public static event EventHandler<ChestItemsModel> ChestItemsEvent;
         public static event EventHandler<InventoryItemModel> NewInventoryItemEvent;
+        public static event EventHandler<uint> ExperienceChangeEvent;
 
         public static void RaiseEvent(Packet[] packets)
         {
@@ -36,6 +37,9 @@ namespace Assets.Scripts.Client
                         break;
                     case PacketType.NewInventoryItem:
                         NewInventoryItemEvent?.Invoke(typeof(PacketEventHandler), packet.ToSerializedPacket<InventoryItemModel>());
+                        break;
+                    case PacketType.ExperienceChange:
+                        ExperienceChangeEvent?.Invoke(typeof(PacketEventHandler), packet.GetUInt());
                         break;
                 }
             }
