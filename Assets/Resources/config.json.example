@@ -1,7 +1,6 @@
 ﻿{
-  "Host": "192.168.1.25",
+  "Host": "duler.net",
   "Port": 13551,
-  "AuthHost": "http://192.168.1.25",
   "DefaultLogin": {
     "Username": "filip.duler@gmail.com",
     "Password": "fduler123"
